@@ -77,15 +77,14 @@ var Effects = {
 		};
 	},
 
-
 	'fire': {
 		noun: 'burning',
 		adjective: 'on fire',
-		counteracts: [ 'fog', 'cold', 'frost' ]
+		negates: [ 'fog', 'cold', 'frost' ]
 	},
 	'water': {
 		adjective: 'soaking wet',
-		counteracts: [ 'fire' ]
+		negates: [ 'fire' ]
 	},
 	'cold': {
 		adjective: 'cold'
@@ -113,7 +112,7 @@ var Effects = {
 		]
 	},
 	'sunlight': {
-		counteracts: [ 'fog' ]
+		negates: [ 'fog' ]
 	},
 	'stench': {
 		noun: 'stench',
@@ -128,7 +127,7 @@ var Effects = {
 	},
 	'large-nose': {
 		noun: 'enlarged nose',
-		counteracts: [ 'small-nose' ],
+		negates: [ 'small-nose' ],
 		modify: function(manager, response, playerState, isDefense) {
 			var opponentState = manager.getPlayerState(playerState.opponent);
 			if (playerState.effects.contains('stench') || opponentState.effects.contains('stench')) {
@@ -140,14 +139,15 @@ var Effects = {
 		},
 	},
 	'small-nose': {
-		counteracts: [ 'large-nose' ],
+		negates: [ 'large-nose' ],
 		modify: function(manager, response, playerState, isDefense) {
 			// Hmm, but how do we reverse another effect?  Do we need to
 			// have inverseModify callback?  Or do we just start listing
 			// out modifiers instead of having a modify function?
 		}
 	},
-	'confuse': {
+	'confusion': {
+		negates: [ 'clarity' ],
 		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
 			// 25% chance of casting a completely different spell
 			if (Math.random() >= 0.25) {
@@ -165,6 +165,9 @@ var Effects = {
 				return false; // Don't allow the spell to be cast
 			}
 		}
+	},
+	'clarity': {
+		negates: [ 'confusion' ],
 	}
 };
 

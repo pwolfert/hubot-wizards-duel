@@ -18,7 +18,7 @@ var spells = [
 		incantation: 'confundo',
 		description: 'confuses',
 		cast: function(manager, response, playerState, onSelf) {
-			manager.addEffect(response, onSelf ? playerState : playerState.opponent, 'confuse');
+			manager.addEffect(response, onSelf ? playerState : playerState.opponent, 'confusion');
 		}
 	},
 	{

@@ -379,21 +379,32 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 		playerState = this.getPlayerState(player);
 	}
 
-	var counteracted = [];
-	var counteracts = effects[effectName].counteracts;
-	if (counteracts) {
-		for (var i = 0; i < counteracts.length; i++) {
-			if (Set.contains(playerState.effects, counteracts[i])) {
-				Set.remove(playerState.effects, counteracts[i]);
-				counteracted.push(counteracts[i]);
+	var negated = [];
+	var negates = effects[effectName].negates;
+	if (negates) {
+		for (var i = 0; i < negates.length; i++) {
+			if (Set.contains(playerState.effects, negates[i])) {
+				Set.remove(playerState.effects, negates[i]);
+				negated.push(negates[i]);
 			}
 		}
 	}
 
-	if (counteracted.length === 0)
+	var counteracts = [];
+	var counteracts = effects[effectName].counteracts;
+	if (counteracts) {
+		for (var i = 0; i < counteracts.length; i++) {
+			if (Set.contains(playerState.effects, counteracts[i]))
+				negated.push(counteracts[i]);
+	}
+
+	if (negated.length === 0)
 		Set.add(playerState.effects, effectName);
 	else
-		response.send('The ' + effectName + ' hath counteracted @' + playerState.name + '\'s ' + oxfordJoin(counteracted) + '.');
+		response.send('The ' + effectName + ' hath negated @' + playerState.name + '\'s ' + oxfordJoin(negated) + '.');
+
+	if (counteracts.length > 0)
+		response.send('The ' + effectName + ' counteracteth @' + playerState.name + '\'s ' + oxfordJoin(counteracted) + '.');
 
 	if (player)
 		this.setPlayerState(player, playerState);
@@ -417,6 +428,30 @@ Manager.prototype.removeEffect = function(response, playerState, effectName) {
 
 	if (player)
 		this.setPlayerState(player, playerState);
+};
+
+/**
+ * Returns a list of effects with notes about counteracting effects.  Example:
+ *   - large-nose
+ *   - stench (counteracted by fragrance)
+ *   - fragrance (counteracted by stench)
+ */
+Manager.prototype.getEffectList = function(player) {
+	var playerState = this.getPlayerState(player);
+	var effects = playerState.effects;
+	var list = [];
+	for (var i = 0; i < effects.length; i++) {
+		var line = Effects[effects[i]].noun;
+		// Then search for countering effects
+		var counteractedBy = [];
+		for (var j = 0; j < effects.length; j++) {
+			var effect = Effects[effects[j]];
+			if (effect.counteracts && effect.counteracts.indexOf(effects[i]) !== -1)
+				counteractedBy.push(effect.noun);
+		}
+		if (counteractedBy.length)
+			line += '(countered by ' + oxfordJoin(counteractedBy) + ')';
+	}
 };
 
 /**
