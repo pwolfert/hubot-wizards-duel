@@ -12,7 +12,9 @@
   "bugs": {
     "url": "https://github.com/hubot-scripts/hubot-wizards-duel/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "underscore": "^1.8.3"
+  },
   "peerDependencies": {
     "hubot": "2.x"
   },

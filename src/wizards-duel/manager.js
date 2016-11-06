@@ -1,6 +1,7 @@
-
-var effects = require('./effects.js');
-var spells  = require('./spells.js');
+var _         = require('underscore');
+var Set       = require('./set');
+var effects   = require('./effects.js');
+var spells    = require('./spells.js');
 
 /**
  * Dueling statuses
@@ -32,7 +33,7 @@ Manager.prototype.registerListeners = function() {
 			var onSelf = res.match[1];
 			var player = res.message.user.name;
 
-			manager.castSpell(res, player, spell, onSelf);
+			manager.utterIncantation(res, player, spell, onSelf);
 		});
 	}
 
@@ -113,6 +114,8 @@ Manager.prototype.startPassiveTurn = function(player, challenger, challengee) {
 		player: player,
 		passive: true
 	});
+
+	this.resetPlayerStateTurnVars(player);
 };
 
 Manager.prototype.startAttackTurn = function(player, challenger, challengee) {
@@ -120,6 +123,8 @@ Manager.prototype.startAttackTurn = function(player, challenger, challengee) {
 		player: player,
 		attack: true
 	});
+
+	this.resetPlayerStateTurnVars(player);
 };
 
 Manager.prototype.getCurrentTurn = function(challenger, challengee) {
@@ -139,13 +144,38 @@ Manager.prototype.duelEnded = function(challenger, challengee, results) {
 };
 
 Manager.prototype.setInitialPlayerState = function(name, isChallenger, opponent) {
-	this.setPlayerState(name, {
+	var playerState = {
 		name: name,
 		isChallenger: isChallenger,
 		opponent: opponent,
+		effects: [],
 		health: 100,
-		effects: []
+		spellcasting: 1,
+		accuracy: 1,
+		dodgeChance: 0,
+	};
+	this.resetPlayerStateTurnVars(playerState);
+	this.setPlayerState(name, playerState);
+};
+
+Manager.prototype.resetPlayerStateTurnVars = function(player, playerState) {
+	if (typeof player === 'string') {
+		if (!playerState)
+			playerState = this.getPlayerState(player);
+	}
+	else {
+		playerState = player;
+		player = undefined;
+	}
+
+	_.extend(playerState, {
+		turnSpellcasting: playerState.spellcasting,
+		turnAccuracy:     playerState.accuracy,
+		turnDodgeChance:  playerState.dodgeChance,
 	});
+
+	if (player)
+		this.setPlayerState(player, playerState);
 };
 
 Manager.prototype.challenge = function(response, challenger, challengee) {
@@ -229,7 +259,7 @@ Manager.prototype.getRules = function() {
 	].join('\n');
 };
 
-Manager.prototype.castSpell = function(response, player, spell, onSelf) {
+Manager.prototype.utterIncantation = function(response, player, spell, onSelf) {
 	var playerState = this.getPlayerState(player);
 
 	if (!playerState) {
@@ -264,19 +294,76 @@ Manager.prototype.castSpell = function(response, player, spell, onSelf) {
 				this.startAttackTurn(playerState.name, challenger, challengee);
 			}
 
+			// Apply effects to playerState
+			var modifiedPlayerState = this.getAffectedPlayerState(playerState);
+
+			// Call any beforeCast functions from effects
+			var attemptCast = true;
+			for (var i = 0; i < modifiedPlayerState.effects.length; i++) {
+				var effect = modifiedPlayerState.effects[i];
+				if (effect.beforeCast &&
+					effect.beforeCast(this, response, modifiedPlayerState, spell, onSelf) === false
+				) {
+					attemptCast = false;
+				}
+			}
+
 			// Attempt to perform the spell
-			var succeeded = this.getSpellSuccess(playerState, spell);
-			if (succeeded)
-				spell.cast(robot, playerState, opponentName, onSelf);
-			else if (spell.failure)
-				spell.failure(robot, playerState, opponentName, onSelf);
-			else
-				response.send('@' + playerState.name + ' fails to cast ' + spell.incantation + '.');
+			if (attemptCast)
+				this.attemptSpellCast(response, modifiedPlayerState, spell, onSelf);
 		}
 		else {
 			response.reply('It is not your turn.');
 		}
 	}
+};
+
+Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSelf) {
+	var succeeded = this.getSpellSuccess(playerState, spell);
+	if (succeeded) {
+		spell.cast(this, response, playerState, onSelf);
+		var narration = playerState.name + ' casteth ' + spell.incantation;
+		if (!onSelf)
+			narration += ' on @' + playerState.opponent;
+		narration += '.  ';
+		narration += spell.narration.replace('@target', (onSelf ? playerState.name : playerState.opponent))
+		response.send(narration);
+	}
+	else if (spell.failure)
+		spell.failure(this, response, playerState, onSelf);
+	else
+		response.send('@' + playerState.name + ' faileth to cast ' + spell.incantation + '.');
+};
+
+Manager.prototype.getAffectedPlayerState = function(playerState) {
+	// TODO: copy and modify player state
+	var modifiedPlayerState = _.extend({}, playerState);
+
+	for (var i = 0; i < playerState.effects.length; i++)
+		playerState.effects[i].modify(this, modifiedPlayerState);
+
+	return modifiedPlayerState;
+};
+
+/**
+ * Adds an effect to the player and negates opposite effects
+ */
+Manager.prototype.addEffect = function(response, player, effectName) {
+	var playerState = this.getPlayerState(player);
+
+	var counteracts = effects[effectName].counteracts;
+	if (counteracts) {
+		for (var i = 0; i < counteracts.length; i++) {
+			if (Set.contains(playerState.effects, counteracts[i])) {
+				response.send('The ' + effectName + ' hath counteracted @' + player + '\'s ' + counteracts[i]);
+				Set.remove(playerState.effects, counteracts[i]);
+			}
+		}
+	}
+
+	Set.add(playerState.effects, effectName);
+
+	this.setPlayerState(player, playerState);
 };
 
 Manager.STATUS_NOT_DUELING = STATUS_NOT_DUELING;

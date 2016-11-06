@@ -2,7 +2,7 @@
 
 Hubot script that allows users to engage in one-on-one wizard's duels
 
-See [`src/wizards-duel.coffee`](src/wizards-duel.coffee) for full documentation.
+See [`src/wizards-duel.js`](src/wizards-duel.js) for full documentation.
 
 ## Installation
 
