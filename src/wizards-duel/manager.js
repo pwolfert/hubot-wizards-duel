@@ -1,7 +1,8 @@
-var _         = require('underscore');
-var Set       = require('./set');
-var effects   = require('./effects.js');
-var spells    = require('./spells.js');
+var _          = require('underscore');
+var oxfordJoin = require('oxford-join');
+var Set        = require('./set');
+var Effects    = require('./effects.js');
+var spells     = require('./spells.js');
 
 /**
  * Dueling statuses
@@ -295,7 +296,7 @@ Manager.prototype.utterIncantation = function(response, player, spell, onSelf) {
 			}
 
 			// Apply effects to playerState
-			var modifiedPlayerState = this.getAffectedPlayerState(playerState);
+			var modifiedPlayerState = this.getAffectedPlayerState(response, playerState);
 
 			// Call any beforeCast functions from effects
 			var attemptCast = true;
@@ -319,15 +320,20 @@ Manager.prototype.utterIncantation = function(response, player, spell, onSelf) {
 };
 
 Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSelf) {
-	var succeeded = this.getSpellSuccess(playerState, spell);
+	var succeeded = this.spellSucceeded(response, playerState, spell);
 	if (succeeded) {
-		spell.cast(this, response, playerState, onSelf);
-		var narration = playerState.name + ' casteth ' + spell.incantation;
-		if (!onSelf)
-			narration += ' on @' + playerState.opponent;
-		narration += '.  ';
-		narration += spell.narration.replace('@target', (onSelf ? playerState.name : playerState.opponent))
-		response.send(narration);
+		if (onSelf || this.spellHitTarget(response, playerState, spell)) {
+			spell.cast(this, response, playerState, onSelf);
+			var narration = playerState.name + ' casteth ' + spell.incantation;
+			if (!onSelf)
+				narration += ' on @' + playerState.opponent;
+			narration += '.  ';
+			narration += spell.narration.replace('@target', (onSelf ? playerState.name : playerState.opponent))
+			response.send(narration);
+		}
+		else {
+			response.send('@' + playerState.name + ' faileth to hit his target.');
+		}
 	}
 	else if (spell.failure)
 		spell.failure(this, response, playerState, onSelf);
@@ -335,37 +341,87 @@ Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSe
 		response.send('@' + playerState.name + ' faileth to cast ' + spell.incantation + '.');
 };
 
-Manager.prototype.getAffectedPlayerState = function(playerState) {
-	// TODO: copy and modify player state
+/**
+ * Determines whether the spell is cast based off the player's state
+ */
+Manager.prototype.spellSucceeded = function(response, playerState, spell) {
+	return true;
+};
+
+/**
+ * Determines whether a given player was able to hit his opponent with a
+ *   particular spell given his state and his opponent's state.
+ */
+Manager.prototype.spellHitTarget = function(response, playerState, spell) {
+	return true;
+};
+
+Manager.prototype.getAffectedPlayerState = function(response, playerState, isDefense) {
 	var modifiedPlayerState = _.extend({}, playerState);
 
 	for (var i = 0; i < playerState.effects.length; i++)
-		playerState.effects[i].modify(this, modifiedPlayerState);
+		Effects.get(playerState.effects[i]).modify(this, response, modifiedPlayerState, isDefense);
 
 	return modifiedPlayerState;
 };
 
 /**
  * Adds an effect to the player and negates opposite effects
+ *
+ * @param {Object} response - hubot response object
+ * @param {(Object|string)} playerState - either the playerState object or player name
+ * @param {string} effectName - the effects array key for the effect
  */
-Manager.prototype.addEffect = function(response, player, effectName) {
-	var playerState = this.getPlayerState(player);
+Manager.prototype.addEffect = function(response, playerState, effectName) {
+	var player;
+	if (typeof playerState === 'string') {
+		player = playerState;
+		playerState = this.getPlayerState(player);
+	}
 
+	var counteracted = [];
 	var counteracts = effects[effectName].counteracts;
 	if (counteracts) {
 		for (var i = 0; i < counteracts.length; i++) {
 			if (Set.contains(playerState.effects, counteracts[i])) {
-				response.send('The ' + effectName + ' hath counteracted @' + player + '\'s ' + counteracts[i]);
 				Set.remove(playerState.effects, counteracts[i]);
+				counteracted.push(counteracts[i]);
 			}
 		}
 	}
 
-	Set.add(playerState.effects, effectName);
+	if (counteracted.length === 0)
+		Set.add(playerState.effects, effectName);
+	else
+		response.send('The ' + effectName + ' hath counteracted @' + playerState.name + '\'s ' + oxfordJoin(counteracted) + '.');
 
-	this.setPlayerState(player, playerState);
+	if (player)
+		this.setPlayerState(player, playerState);
 };
 
+/**
+ * Removes an effect from the player
+ *
+ * @param {Object} response - hubot response object
+ * @param {(Object|string)} playerState - either the playerState object or player name
+ * @param {string} effectName - the effects array key for the effect
+ */
+Manager.prototype.removeEffect = function(response, playerState, effectName) {
+	var player;
+	if (typeof playerState === 'string') {
+		player = playerState;
+		playerState = this.getPlayerState(player);
+	}
+
+	Set.remove(playerState.effects, effectName);
+
+	if (player)
+		this.setPlayerState(player, playerState);
+};
+
+/**
+ * Static constants
+ */
 Manager.STATUS_NOT_DUELING = STATUS_NOT_DUELING;
 Manager.STATUS_CHALLENGE_SENT = STATUS_CHALLENGE_SENT;
 Manager.STATUS_DUELING = STATUS_DUELING;

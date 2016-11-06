@@ -21,3 +21,5 @@ Then add **hubot-wizards-duel** to your `external-scripts.json`:
 ## NPM Module
 
 https://www.npmjs.com/package/hubot-wizards-duel
+
+If I really get tired with not having ES6 string interpolation: https://github.com/github/hubot/issues/1009

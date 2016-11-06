@@ -1,8 +1,85 @@
 var _      = require('underscore');
 var spells = require('./spells');
 
-var effects = {
+var Effects = {
+
+	get: function(effectName) {
+		// Create an object with callable functions
+		return {
+			effect: this[effectName],
+
+			modify: function(manager, response, playerState, isDefense) {
+				// Apply listed modifiers
+				if (this.effect.modifiers) {
+					for (var i = 0; i < this.effect.modifiers.length; i++) {
+						var modifier = this.effect.modifiers[i];
+						var property = modifier[0];
+						var operator = modifier[1];
+						var operand = modifier[2];
+						switch (operator) {
+							case '*=':
+								playerState[property] *= operand;
+								break;
+							case '/=':
+								playerState[property] /= operand;
+								break;
+							case '+=':
+								playerState[property] += operand;
+								break;
+							case '-=':
+								playerState[property] -= operand;
+								break;
+							case '=':
+								playerState[property] = operand;
+								break;
+						}
+					}
+				}
+
+				// Call modify function if it exists
+				if (this.effect.modify)
+					this.effect.modify(manager, response, playerState, isDefense);
+			},
+
+			inverseModify: function(manager, response, playerState, isDefense) {
+				// Inversly apply listed modifiers
+				if (this.effect.modifiers) {
+					for (var i = 0; i < this.effect.modifiers.length; i++) {
+						var modifier = this.effect.modifiers[i];
+						var property = modifier[0];
+						var operator = modifier[1];
+						var operand = modifier[2];
+						switch (operator) {
+							case '*=':
+								playerState[property] /= operand;
+								break;
+							case '/=':
+								playerState[property] *= operand;
+								break;
+							case '+=':
+								playerState[property] -= operand;
+								break;
+							case '-=':
+								playerState[property] += operand;
+								break;
+						}
+					}
+				}
+			},
+
+			narrateDefenseModifiers: function(response, playerState) {
+
+			},
+
+			narrateOffenseModifiers: function(response, playerState) {
+				// 'Spellcasting chance is lowered'
+			},
+		};
+	},
+
+
 	'fire': {
+		noun: 'burning',
 		adjective: 'on fire',
 		counteracts: [ 'fog', 'cold', 'frost' ]
 	},
@@ -23,38 +100,48 @@ var effects = {
 		counteracts: [ 'levitation' ]
 	},
 	'frog-vomitting': {
+		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
-		modify: function(manager, playerState) {
-			playerState.turnSpellcasting *= 0.75;
-		}
+		modifiers: [
+			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to speak' ]
+		],
 	},
 	'fog': {
-		modify: function(manager, playerState) {
-			playerState.turnAccuracy *= 0.75;
-			playerState.turnDodgeChance *= 1.25;
-		}
+		modifiers: [
+			[ 'turnAccuracy',    '*=', 0.75, 'maketh it difficult to see' ],
+			[ 'turnDodgeChance', '*=', 1.25, 'maketh it difficult to see' ]
+		]
 	},
 	'sunlight': {
 		counteracts: [ 'fog' ]
 	},
 	'stench': {
-
+		noun: 'stench',
+		counteracts: [ 'fragrance' ],
+		modifiers: [
+			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to concentrate' ]
+		],
+	},
+	'fragrance': {
+		noun: 'fragrance',
+		counteracts: [ 'stench' ],
 	},
 	'large-nose': {
+		noun: 'enlarged nose',
 		counteracts: [ 'small-nose' ],
-		modify: function(manager, playerState) {
+		modify: function(manager, response, playerState, isDefense) {
 			var opponentState = manager.getPlayerState(playerState.opponent);
 			if (playerState.effects.contains('stench') || opponentState.effects.contains('stench')) {
 				// If the effect is on us this applies the effect again, which
 				//   effectively doubles it.  If the effect is on the opponent,
 				//   we want it now applied to us as well.
-				effects['stench'].modify(playerState);
+				Effects.get('stench').modify(manager, repsonse, playerState, isDefense);
 			}
 		},
 	},
 	'small-nose': {
 		counteracts: [ 'large-nose' ],
-		modify: function(manager, playerState) {
+		modify: function(manager, response, playerState, isDefense) {
 			// Hmm, but how do we reverse another effect?  Do we need to
 			// have inverseModify callback?  Or do we just start listing
 			// out modifiers instead of having a modify function?
@@ -81,4 +168,4 @@ var effects = {
 	}
 };
 
-module.exports = effects;
+module.exports = Effects;

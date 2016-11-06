@@ -13,6 +13,7 @@
     "url": "https://github.com/hubot-scripts/hubot-wizards-duel/issues"
   },
   "dependencies": {
+    "oxford-join": "^0.1.0",
     "underscore": "^1.8.3"
   },
   "peerDependencies": {
