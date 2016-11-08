@@ -1,124 +1,128 @@
 var _      = require('underscore');
 var spells = require('./spells');
 
+var Effect = function(name, effect) {
+	_.extend(this, effect);
+	this.effect = effect;
+	this.name = name;
+
+	this.modify = function(manager, response, playerState, isDefense) {
+		// Apply listed modifiers
+		if (this.effect.modifiers) {
+			for (var i = 0; i < this.effect.modifiers.length; i++) {
+				var modifier = this.effect.modifiers[i];
+				var property = modifier[0];
+				var operator = modifier[1];
+				var operand = modifier[2];
+				switch (operator) {
+					case '*=':
+						playerState[property] *= operand;
+						break;
+					case '/=':
+						playerState[property] /= operand;
+						break;
+					case '+=':
+						playerState[property] += operand;
+						break;
+					case '-=':
+						playerState[property] -= operand;
+						break;
+					case '=':
+						playerState[property] = operand;
+						break;
+				}
+			}
+		}
+
+		// Call modify function if it exists
+		if (this.effect.modify)
+			this.effect.modify(arguments);
+	};
+
+	this.inverseModify = function(manager, response, playerState, isDefense) {
+		// Inversly apply listed modifiers
+		if (this.effect.modifiers) {
+			for (var i = 0; i < this.effect.modifiers.length; i++) {
+				var modifier = this.effect.modifiers[i];
+				var property = modifier[0];
+				var operator = modifier[1];
+				var operand = modifier[2];
+				switch (operator) {
+					case '*=':
+						playerState[property] /= operand;
+						break;
+					case '/=':
+						playerState[property] *= operand;
+						break;
+					case '+=':
+						playerState[property] -= operand;
+						break;
+					case '-=':
+						playerState[property] += operand;
+						break;
+				}
+			}
+		}
+	};
+
+	this.narrateDefenseModifiers = function(response, playerState) {
+
+	};
+
+	this.narrateOffenseModifiers = function(response, playerState) {
+		// 'Spellcasting chance is lowered'
+	};
+};
+
 var Effects = {
 
 	get: function(effectName) {
 		// Create an object with callable functions
-		return {
-			effect: this[effectName],
-
-			modify: function(manager, response, playerState, isDefense) {
-				// Apply listed modifiers
-				if (this.effect.modifiers) {
-					for (var i = 0; i < this.effect.modifiers.length; i++) {
-						var modifier = this.effect.modifiers[i];
-						var property = modifier[0];
-						var operator = modifier[1];
-						var operand = modifier[2];
-						switch (operator) {
-							case '*=':
-								playerState[property] *= operand;
-								break;
-							case '/=':
-								playerState[property] /= operand;
-								break;
-							case '+=':
-								playerState[property] += operand;
-								break;
-							case '-=':
-								playerState[property] -= operand;
-								break;
-							case '=':
-								playerState[property] = operand;
-								break;
-						}
-					}
-				}
-
-				// Call modify function if it exists
-				if (this.effect.modify)
-					this.effect.modify(manager, response, playerState, isDefense);
-			},
-
-			inverseModify: function(manager, response, playerState, isDefense) {
-				// Inversly apply listed modifiers
-				if (this.effect.modifiers) {
-					for (var i = 0; i < this.effect.modifiers.length; i++) {
-						var modifier = this.effect.modifiers[i];
-						var property = modifier[0];
-						var operator = modifier[1];
-						var operand = modifier[2];
-						switch (operator) {
-							case '*=':
-								playerState[property] /= operand;
-								break;
-							case '/=':
-								playerState[property] *= operand;
-								break;
-							case '+=':
-								playerState[property] -= operand;
-								break;
-							case '-=':
-								playerState[property] += operand;
-								break;
-						}
-					}
-				}
-			},
-
-			narrateDefenseModifiers: function(response, playerState) {
-
-			},
-
-			narrateOffenseModifiers: function(response, playerState) {
-				// 'Spellcasting chance is lowered'
-			},
-		};
+		return new Effect(effectName, Effects[effectName]);
 	},
 
 	'fire': {
 		noun: 'burning',
 		adjective: 'on fire',
-		negates: [ 'fog', 'cold', 'frost' ]
+		negates: [ 'fog', 'cold', 'frost' ],
 	},
 	'water': {
 		adjective: 'soaking wet',
-		negates: [ 'fire' ]
+		negates: [ 'fire' ],
 	},
 	'cold': {
-		adjective: 'cold'
+		adjective: 'cold',
 	},
 	'frost': {
-		adjective: 'frozen'
+		adjective: 'frozen',
 	},
 	'levitation': {
-		adjective: 'floating in the air'
+		adjective: 'floating in the air',
 	},
 	'entangling-roots': {
-		counteracts: [ 'levitation' ]
+		counteracts: [ 'levitation' ],
 	},
 	'frog-vomitting': {
 		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
 		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to speak' ]
+			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to speak' ],
 		],
 	},
 	'fog': {
 		modifiers: [
 			[ 'turnAccuracy',    '*=', 0.75, 'maketh it difficult to see' ],
-			[ 'turnDodgeChance', '*=', 1.25, 'maketh it difficult to see' ]
-		]
+			[ 'turnDodgeChance', '*=', 1.25, 'maketh it difficult to see' ],
+		],
 	},
 	'sunlight': {
-		negates: [ 'fog' ]
+		negates: [ 'fog' ],
 	},
 	'stench': {
 		noun: 'stench',
 		counteracts: [ 'fragrance' ],
 		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to concentrate' ]
+			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to concentrate' ],
 		],
 	},
 	'fragrance': {
@@ -144,7 +148,7 @@ var Effects = {
 			// Hmm, but how do we reverse another effect?  Do we need to
 			// have inverseModify callback?  Or do we just start listing
 			// out modifiers instead of having a modify function?
-		}
+		},
 	},
 	'confusion': {
 		negates: [ 'clarity' ],
@@ -164,11 +168,11 @@ var Effects = {
 
 				return false; // Don't allow the spell to be cast
 			}
-		}
+		},
 	},
 	'clarity': {
 		negates: [ 'confusion' ],
-	}
+	},
 };
 
 module.exports = Effects;

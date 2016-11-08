@@ -2,7 +2,7 @@ var _          = require('underscore');
 var oxfordJoin = require('oxford-join');
 var Set        = require('./set');
 var Effects    = require('./effects.js');
-var spells     = require('./spells.js');
+var Spells     = require('./spells.js');
 
 /**
  * Dueling statuses
@@ -26,8 +26,7 @@ Manager.prototype.registerListeners = function() {
 	var robot = this.robot;
 
 	// Register the spell listeners
-	for (var i = 0; i < spells.length; i++) {
-		var spell = spells[i];
+	Spells.each(function(spell) {
 		var regex = new RegExp('^' + spell.incantation + '(\\sself)?!', 'i');
 
 		robot.hear(regex, function(res) {
@@ -36,7 +35,7 @@ Manager.prototype.registerListeners = function() {
 
 			manager.utterIncantation(res, player, spell, onSelf);
 		});
-	}
+	});
 
 	// Listen for challenges
 	robot.hear(/I challenge (@\w+) to a wizard'?’?s'?’? duel!/i, function(res) {
@@ -69,7 +68,7 @@ Manager.prototype.registerListeners = function() {
 
 	// Listen for spell-list requests
 	robot.hear(/list spells/i, function(res) {
-		var spellNames = spells.map(function(spell) {
+		var spellNames = Spells.spells.map(function(spell) {
 			return ' - ' + spell.incantation;
 		});
 
@@ -77,7 +76,7 @@ Manager.prototype.registerListeners = function() {
 			'```',
 			'Spells: ',
 			spellNames.join('\n'),
-			'```'
+			'```',
 		].join('\n'));
 	});
 };
@@ -113,7 +112,7 @@ Manager.getTurnKey = function(challenger, challengee) {
 Manager.prototype.startPassiveTurn = function(player, challenger, challengee) {
 	this.brain.set(Manager.getTurnKey(challenger, challengee), {
 		player: player,
-		passive: true
+		passive: true,
 	});
 
 	this.resetPlayerStateTurnVars(player);
@@ -122,7 +121,7 @@ Manager.prototype.startPassiveTurn = function(player, challenger, challengee) {
 Manager.prototype.startAttackTurn = function(player, challenger, challengee) {
 	this.brain.set(Manager.getTurnKey(challenger, challengee), {
 		player: player,
-		attack: true
+		attack: true,
 	});
 
 	this.resetPlayerStateTurnVars(player);
@@ -190,7 +189,7 @@ Manager.prototype.challenge = function(response, challenger, challengee) {
 
 		response.send([
 			'@' + challenger + ' hath challenged @' + challengee + ' to a wizard\'s duel!  _Doth @' + challengee + ' accept?_',
-			'Type "I accept @' + challenger + '\'s challenge." to accept.'
+			'Type "I accept @' + challenger + '\'s challenge." to accept.',
 		].join('\n'));
 	}
 };
@@ -208,7 +207,7 @@ Manager.prototype.acceptChallenge = function(response, challenger, challengee) {
 			'*Hear ye! Hear ye!*',
 			'A duel shall now commence between @' + challenger +' and @' + challengee + '!' +
 			'@' + startingPlayer + ', thou hast won the coin toss and mayst begin first with an attack.  ' +
-			'Whosoever requireth the list of rules shouldst only type "dueling rules".'
+			'Whosoever requireth the list of rules shouldst only type "dueling rules".',
 		].join('\n'));
 	}
 	else {
@@ -235,7 +234,7 @@ Manager.prototype.resign = function(response, player, opponent) {
 		}
 
 		this.duelEnded(challenger, challengee, {
-			resigned: player
+			resigned: player,
 		});
 	}
 };
@@ -256,7 +255,7 @@ Manager.prototype.getRules = function() {
 		'    - To cast a spell upon thyself, typest thou the spell\'s incantation followed by "self"',
 		'      Example: "volito self"',
 		'    - To surrender, typest thou "I yield to @[opponent\'s name]."',
-		'```'
+		'```',
 	].join('\n');
 };
 
@@ -323,12 +322,13 @@ Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSe
 	var succeeded = this.spellSucceeded(response, playerState, spell);
 	if (succeeded) {
 		if (onSelf || this.spellHitTarget(response, playerState, spell)) {
+			console.log(spell)
 			spell.cast(this, response, playerState, onSelf);
 			var narration = playerState.name + ' casteth ' + spell.incantation;
 			if (!onSelf)
 				narration += ' on @' + playerState.opponent;
 			narration += '.  ';
-			narration += spell.narration.replace('@target', (onSelf ? playerState.name : playerState.opponent))
+			narration += spell.narration.replace('@target', (onSelf ? playerState.name : playerState.opponent));
 			response.send(narration);
 		}
 		else {
@@ -380,7 +380,7 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 	}
 
 	var negated = [];
-	var negates = effects[effectName].negates;
+	var negates = Effects[effectName].negates;
 	if (negates) {
 		for (var i = 0; i < negates.length; i++) {
 			if (Set.contains(playerState.effects, negates[i])) {
@@ -391,11 +391,12 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 	}
 
 	var counteracts = [];
-	var counteracts = effects[effectName].counteracts;
+	var counteracts = Effects[effectName].counteracts;
 	if (counteracts) {
 		for (var i = 0; i < counteracts.length; i++) {
 			if (Set.contains(playerState.effects, counteracts[i]))
 				negated.push(counteracts[i]);
+		}
 	}
 
 	if (negated.length === 0)

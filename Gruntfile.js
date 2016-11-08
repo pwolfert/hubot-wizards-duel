@@ -11,6 +11,9 @@ module.exports = function (grunt) {
         src: ['test/**/*.js']
       }
     },
+    eslint: {
+      all: ['src/**/*.js']
+    },
     release: {
       options: {
         tagName: 'v<%= version %>',
@@ -28,5 +31,5 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', ['mochaTest']);
   grunt.registerTask('test:watch', ['watch']);
-  grunt.registerTask('default', ['test']);
+  grunt.registerTask('default', ['eslint', 'test']);
 };

@@ -7,14 +7,14 @@ var Set = {
 	},
 
 	remove: function(array, item) {
-		var index = array.indexOf(item)
+		var index = array.indexOf(item);
 		if (index !== -1)
 			array.splice(index, 1);
 	},
 
 	contains: function(array, item) {
 		return (array.indexOf(item) !== -1);
-	}
+	},
 
 };
 
