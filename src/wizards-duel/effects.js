@@ -1,6 +1,112 @@
 var _      = require('underscore');
 var spells = require('./spells');
 
+var effects = {
+	'fire': {
+		noun: 'burning',
+		adjective: 'on fire',
+		negates: [ 'fog', 'cold', 'frost' ],
+	},
+	'water': {
+		adjective: 'soaking wet',
+		negates: [ 'fire' ],
+	},
+	'cold': {
+		adjective: 'cold',
+	},
+	'frost': {
+		adjective: 'frozen',
+	},
+	'levitation': {
+		adjective: 'floating in the air',
+	},
+	'entangling-roots': {
+		counteracts: [ 'levitation' ],
+	},
+	'frog-vomitting': {
+		noun: 'vomitting up of frogs',
+		adjective: 'vomitting frogs',
+		modifiers: [
+			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to speak' ],
+		],
+	},
+	'fog': {
+		modifiers: [
+			[ 'turnAccuracy',    '*=', 0.75, 'maketh it difficult to see' ],
+			[ 'turnDodgeChance', '*=', 1.25, 'maketh it difficult to see' ],
+		],
+	},
+	'sunlight': {
+		negates: [ 'fog' ],
+	},
+	'stench': {
+		noun: 'stench',
+		counteracts: [ 'fragrance' ],
+		modifiers: [
+			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to concentrate' ],
+		],
+	},
+	'fragrance': {
+		noun: 'fragrance',
+		counteracts: [ 'stench' ],
+	},
+	'large-nose': {
+		noun: 'enlarged nose',
+		negates: [ 'small-nose' ],
+		modify: function(manager, response, playerState, isDefense) {
+			var opponentState = manager.getPlayerState(playerState.opponent);
+			if (playerState.effects.contains('stench') || opponentState.effects.contains('stench')) {
+				// If the effect is on us this applies the effect again, which
+				//   effectively doubles it.  If the effect is on the opponent,
+				//   we want it now applied to us as well.
+				Effects.get('stench').modify(manager, repsonse, playerState, isDefense);
+			}
+		},
+	},
+	'small-nose': {
+		negates: [ 'large-nose' ],
+		modify: function(manager, response, playerState, isDefense) {
+			// Hmm, but how do we reverse another effect?  Do we need to
+			// have inverseModify callback?  Or do we just start listing
+			// out modifiers instead of having a modify function?
+		},
+	},
+	'confusion': {
+		negates: [ 'clarity' ],
+		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
+			// 25% chance of casting a completely different spell
+			if (Math.random() < 0.25) {
+				var spellsArray = _.values(spells);
+				var randomSpell = _.sample(spellsArray);
+
+				// Narrate what just happened
+				response.send(
+					'@' + modifiedPlayerState.name + ' attempteth to utter the _' + spell.incantation + '_ ' +
+					'but is confused and instead uttereth _' + randomSpell.incantation + '_.'
+				);
+
+				manager.attemptSpellCast(response, modifiedPlayerState, randomSpell, onSelf);
+
+				return false; // Don't allow the spell to be cast
+			}
+		},
+	},
+	'clarity': {
+		negates: [ 'confusion', 'intoxication' ],
+	},
+	'intoxication': {
+		negates: [ 'clarity' ],
+		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
+			var words = spell.incantation.split(' ');
+			// 60% chance of swapping word beginnings
+			if (words.length > 1 && Math.random() < 0.6) {
+				// Swap the beginning of the first two words
+				// Maybe figure out where the first vowel begins and select the beginning to that
+			}
+		}
+	}
+};
+
 var Effect = function(name, effect) {
 	_.extend(this, effect);
 	this.effect = effect;
@@ -76,103 +182,15 @@ var Effect = function(name, effect) {
 
 var Effects = {
 
+	effects: _.mapObject(effects, function(effect, effectName) {
+		return new Effect(effectName, effect);
+	}),
+
 	get: function(effectName) {
 		// Create an object with callable functions
-		return new Effect(effectName, Effects[effectName]);
+		return this.effects[effectName];
 	},
 
-	'fire': {
-		noun: 'burning',
-		adjective: 'on fire',
-		negates: [ 'fog', 'cold', 'frost' ],
-	},
-	'water': {
-		adjective: 'soaking wet',
-		negates: [ 'fire' ],
-	},
-	'cold': {
-		adjective: 'cold',
-	},
-	'frost': {
-		adjective: 'frozen',
-	},
-	'levitation': {
-		adjective: 'floating in the air',
-	},
-	'entangling-roots': {
-		counteracts: [ 'levitation' ],
-	},
-	'frog-vomitting': {
-		noun: 'vomitting up of frogs',
-		adjective: 'vomitting frogs',
-		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to speak' ],
-		],
-	},
-	'fog': {
-		modifiers: [
-			[ 'turnAccuracy',    '*=', 0.75, 'maketh it difficult to see' ],
-			[ 'turnDodgeChance', '*=', 1.25, 'maketh it difficult to see' ],
-		],
-	},
-	'sunlight': {
-		negates: [ 'fog' ],
-	},
-	'stench': {
-		noun: 'stench',
-		counteracts: [ 'fragrance' ],
-		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to concentrate' ],
-		],
-	},
-	'fragrance': {
-		noun: 'fragrance',
-		counteracts: [ 'stench' ],
-	},
-	'large-nose': {
-		noun: 'enlarged nose',
-		negates: [ 'small-nose' ],
-		modify: function(manager, response, playerState, isDefense) {
-			var opponentState = manager.getPlayerState(playerState.opponent);
-			if (playerState.effects.contains('stench') || opponentState.effects.contains('stench')) {
-				// If the effect is on us this applies the effect again, which
-				//   effectively doubles it.  If the effect is on the opponent,
-				//   we want it now applied to us as well.
-				Effects.get('stench').modify(manager, repsonse, playerState, isDefense);
-			}
-		},
-	},
-	'small-nose': {
-		negates: [ 'large-nose' ],
-		modify: function(manager, response, playerState, isDefense) {
-			// Hmm, but how do we reverse another effect?  Do we need to
-			// have inverseModify callback?  Or do we just start listing
-			// out modifiers instead of having a modify function?
-		},
-	},
-	'confusion': {
-		negates: [ 'clarity' ],
-		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
-			// 25% chance of casting a completely different spell
-			if (Math.random() >= 0.25) {
-				var spellsArray = _.values(spells);
-				var randomSpell = _.sample(spellsArray);
-
-				// Narrate what just happened
-				response.send(
-					'@' + modifiedPlayerState.name + ' attempteth to utter the _' + spell.incantation + '_ ' +
-					'but is confused and instead uttereth _' + randomSpell.incantation + '_.'
-				);
-
-				manager.attemptSpellCast(response, modifiedPlayerState, randomSpell, onSelf);
-
-				return false; // Don't allow the spell to be cast
-			}
-		},
-	},
-	'clarity': {
-		negates: [ 'confusion' ],
-	},
 };
 
 module.exports = Effects;
