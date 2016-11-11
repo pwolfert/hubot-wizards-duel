@@ -19,7 +19,7 @@ var spells = [
 	{
 		incantation: 'caseum foetidum',
 		description: 'makes one smell like stinky cheese',
-		narration: '@target smelleth like stinky cheese.',
+		narration: '@target smells like stinky cheese.',
 		effects: [ 'stench' ],
 	},
 	{
@@ -29,13 +29,13 @@ var spells = [
 	{
 		incantation: 'narem amplio',
 		description: 'enlarges one\'s nose',
-		narration: '@target\'s nose hath been englarged.',
+		narration: '@target\'s nose has been englarged.',
 		effects: [ 'large-nose' ],
 	},
 	{
 		incantation: 'narem imminuo',
 		description: 'shrinks one\'s nose',
-		narration: '@target\'s nose hath shrunk.',
+		narration: '@target\'s nose has shrunk.',
 		effects: [ 'small-nose' ],
 	},
 	{
@@ -78,13 +78,13 @@ var Spell = function(spell) {
 
 var Spells = {
 
-	get: function(incantation) {
-		return _.findWhere(spells, { incantation: incantation });
-	},
-
 	spells: _.map(spells, function(spell) {
 		return new Spell(spell);
 	}),
+
+	get: function(incantation) {
+		return _.findWhere(this.spells, { incantation: incantation });
+	},
 
 	each: _.partial(_.each, this.spells),
 

@@ -188,7 +188,7 @@ Manager.prototype.challenge = function(response, challenger, challengee) {
 		this.setDuelStatus(challenger, challengee, STATUS_CHALLENGE_SENT);
 
 		response.send([
-			'@' + challenger + ' hath challenged @' + challengee + ' to a wizard\'s duel!  _Doth @' + challengee + ' accept?_',
+			'@' + challenger + ' has challenged @' + challengee + ' to a wizard\'s duel!  _Does @' + challengee + ' accept?_',
 			'Type "I accept @' + challenger + '\'s challenge." to accept.',
 		].join('\n'));
 	}
@@ -206,8 +206,9 @@ Manager.prototype.acceptChallenge = function(response, challenger, challengee) {
 		response.send([
 			'*Hear ye! Hear ye!*',
 			'A duel shall now commence between @' + challenger +' and @' + challengee + '!' +
-			'@' + startingPlayer + ', thou hast won the coin toss and mayst begin first with an attack.  ' +
-			'Whosoever requireth the list of rules shouldst only type "dueling rules".',
+			'@' + startingPlayer + ', you have won the coin toss and may start your offensive turn.  ' +
+			'For a list of rules, type "dueling rules". ' +
+			'For the list of spells, type "list spells"',
 		].join('\n'));
 	}
 	else {
@@ -218,7 +219,7 @@ Manager.prototype.acceptChallenge = function(response, challenger, challengee) {
 Manager.prototype.resign = function(response, player, opponent) {
 	var playerState = this.getPlayerState(player);
 	if (!playerState || playerState.opponent != opponent) {
-		response.reply('Thou art not dueling with @' + opponent + '.');
+		response.reply('You are not dueling with @' + opponent + '.');
 	}
 	else {
 		var challenger;
@@ -245,16 +246,16 @@ Manager.prototype.getRules = function() {
 		'Dueling Rules:',
 		'',
 		'  Protocol:',
-		'    1. The combatant who starteth the duel is determined by chance.',
-		'    2. The starting combatant beginneth with an offensive spell.',
-		'    3. The next combatant beginneth his turn with an optional passive spell on himself and then an offensive spell on his opponent.',
-		'    4. It then becommeth his opponent\'s turn, and the cycle repeateth until one duelist stands alone.',
+		'    1. The starting combatant is determined by chance and begins with an offensive spell.',
+		'    2. The next combatant begins his turn with an optional passive spell on himself and then an offensive spell on his opponent.',
+		'    3. It then becomes his opponent\'s turn, and the cycle repeats until one duelist is no longer able to cast spells.',
 		'',
 		'  Directions:',
-		'    - To cast a spell on thy opponent, typest thou the spell\'s incantation.',
-		'    - To cast a spell upon thyself, typest thou the spell\'s incantation followed by "self"',
-		'      Example: "volito self"',
-		'    - To surrender, typest thou "I yield to @[opponent\'s name]."',
+		'    - To cast a spell on your opponent, type the spell\'s incantation followed by an exclamation point!',
+		'    - To cast a spell upon yourself, end your incantation with the word "self"',
+		'      Example: "volito self!"',
+		'    - To surrender, type "I yield to @[opponent\'s name]."',
+		'    - For a more complete guide, visit pwolfert.github.io/hubot-wizards-duel',
 		'```',
 	].join('\n');
 };
@@ -324,7 +325,7 @@ Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSe
 		if (onSelf || this.spellHitTarget(response, playerState, spell)) {
 			console.log(spell)
 			spell.cast(this, response, playerState, onSelf);
-			var narration = playerState.name + ' casteth ' + spell.incantation;
+			var narration = playerState.name + ' cast ' + spell.incantation;
 			if (!onSelf)
 				narration += ' on @' + playerState.opponent;
 			narration += '.  ';
@@ -332,13 +333,13 @@ Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSe
 			response.send(narration);
 		}
 		else {
-			response.send('@' + playerState.name + ' faileth to hit his target.');
+			response.send('@' + playerState.name + ' fails to hit his target.');
 		}
 	}
 	else if (spell.failure)
 		spell.failure(this, response, playerState, onSelf);
 	else
-		response.send('@' + playerState.name + ' faileth to cast ' + spell.incantation + '.');
+		response.send('@' + playerState.name + ' fails to cast ' + spell.incantation + '.');
 };
 
 /**
@@ -402,10 +403,10 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 	if (negated.length === 0)
 		Set.add(playerState.effects, effectName);
 	else
-		response.send('The ' + effectName + ' hath negated @' + playerState.name + '\'s ' + oxfordJoin(negated) + '.');
+		response.send('The ' + effectName + ' has negated @' + playerState.name + '\'s ' + oxfordJoin(negated) + '.');
 
 	if (counteracts.length > 0)
-		response.send('The ' + effectName + ' counteracteth @' + playerState.name + '\'s ' + oxfordJoin(counteracted) + '.');
+		response.send('The ' + effectName + ' counteracted @' + playerState.name + '\'s ' + oxfordJoin(counteracted) + '.');
 
 	if (player)
 		this.setPlayerState(player, playerState);

@@ -27,13 +27,13 @@ var effects = {
 		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
 		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to speak' ],
+			[ 'turnSpellcasting', '*=', 0.75, 'makes it difficult to speak' ],
 		],
 	},
 	'fog': {
 		modifiers: [
-			[ 'turnAccuracy',    '*=', 0.75, 'maketh it difficult to see' ],
-			[ 'turnDodgeChance', '*=', 1.25, 'maketh it difficult to see' ],
+			[ 'turnAccuracy',    '*=', 0.75, 'makes it difficult to see' ],
+			[ 'turnDodgeChance', '*=', 1.25, 'makes it difficult to see' ],
 		],
 	},
 	'sunlight': {
@@ -43,7 +43,7 @@ var effects = {
 		noun: 'stench',
 		counteracts: [ 'fragrance' ],
 		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'maketh it difficult to concentrate' ],
+			[ 'turnSpellcasting', '*=', 0.75, 'makes it difficult to concentrate' ],
 		],
 	},
 	'fragrance': {
@@ -81,8 +81,8 @@ var effects = {
 
 				// Narrate what just happened
 				response.send(
-					'@' + modifiedPlayerState.name + ' attempteth to utter the _' + spell.incantation + '_ ' +
-					'but is confused and instead uttereth _' + randomSpell.incantation + '_.'
+					'@' + modifiedPlayerState.name + ' attempts to utter the _' + spell.incantation + '_ ' +
+					'but is confused and instead utters _' + randomSpell.incantation + '_.'
 				);
 
 				manager.attemptSpellCast(response, modifiedPlayerState, randomSpell, onSelf);
