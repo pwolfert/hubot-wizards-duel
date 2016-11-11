@@ -300,7 +300,7 @@ Manager.prototype.utterIncantation = function(response, player, spell, onSelf) {
 			// Call any beforeCast functions from effects
 			var attemptCast = true;
 			for (var i = 0; i < modifiedPlayerState.effects.length; i++) {
-				var effect = modifiedPlayerState.effects[i];
+				var effect = Effects.get(modifiedPlayerState.effects[i]);
 				if (effect.beforeCast &&
 					effect.beforeCast(this, response, modifiedPlayerState, spell, onSelf) === false
 				) {
@@ -380,7 +380,7 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 	}
 
 	var negated = [];
-	var negates = Effects[effectName].negates;
+	var negates = Effects.get(effectName).negates;
 	if (negates) {
 		for (var i = 0; i < negates.length; i++) {
 			if (Set.contains(playerState.effects, negates[i])) {
@@ -391,7 +391,7 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 	}
 
 	var counteracts = [];
-	var counteracts = Effects[effectName].counteracts;
+	var counteracts = Effects.get(effectName).counteracts;
 	if (counteracts) {
 		for (var i = 0; i < counteracts.length; i++) {
 			if (Set.contains(playerState.effects, counteracts[i]))
@@ -442,11 +442,11 @@ Manager.prototype.getEffectList = function(player) {
 	var effects = playerState.effects;
 	var list = [];
 	for (var i = 0; i < effects.length; i++) {
-		var line = Effects[effects[i]].noun;
+		var line = Effects.get(effects[i]).noun;
 		// Then search for countering effects
 		var counteractedBy = [];
 		for (var j = 0; j < effects.length; j++) {
-			var effect = Effects[effects[j]];
+			var effect = Effects.get(effects[j]);
 			if (effect.counteracts && effect.counteracts.indexOf(effects[i]) !== -1)
 				counteractedBy.push(effect.noun);
 		}
