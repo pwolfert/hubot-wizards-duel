@@ -32,8 +32,8 @@ var effects = {
 	},
 	'fog': {
 		modifiers: [
-			[ 'turnAccuracy',    '*=', 0.75, 'makes it difficult to see' ],
-			[ 'turnDodgeChance', '*=', 1.25, 'makes it difficult to see' ],
+			[ 'turnAccuracy', '*=', 0.75, 'makes it difficult to see' ],
+			[ 'turnEvasion',  '*=', 1.25, 'makes it difficult to see' ],
 		],
 	},
 	'sunlight': {

@@ -152,7 +152,7 @@ Manager.prototype.setInitialPlayerState = function(name, isChallenger, opponent)
 		health: 100,
 		spellcasting: 1,
 		accuracy: 1,
-		dodgeChance: 0,
+		evasion: 0,
 	};
 	this.resetPlayerStateTurnVars(playerState);
 	this.setPlayerState(name, playerState);
@@ -171,7 +171,7 @@ Manager.prototype.resetPlayerStateTurnVars = function(player, playerState) {
 	_.extend(playerState, {
 		turnSpellcasting: playerState.spellcasting,
 		turnAccuracy:     playerState.accuracy,
-		turnDodgeChance:  playerState.dodgeChance,
+		turnEvasion:      playerState.evasion,
 	});
 
 	if (player)
@@ -346,7 +346,7 @@ Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSe
  * Determines whether the spell is cast based off the player's state
  */
 Manager.prototype.spellSucceeded = function(response, playerState, spell) {
-	return true;
+	return (Math.random() >= playerState.turnSpellcasting);
 };
 
 /**
@@ -354,7 +354,20 @@ Manager.prototype.spellSucceeded = function(response, playerState, spell) {
  *   particular spell given his state and his opponent's state.
  */
 Manager.prototype.spellHitTarget = function(response, playerState, spell) {
-	return true;
+	var opponentState = this.getPlayerState(playerState.opponent);
+	var accuracy = playerState.turnAccuracy;
+	var evasion = playerState.turnEvasion;
+	var chanceToHit = ((accuracy - evasion) / accuracy); // Problem with this calculation is that if evasion is 0, it will always hit
+	// But if we just use (accuracy - evasion), there are cases where there's no chance of hitting at all.  There needs to be a chance
+	// But maybe there is no chance of hitting given a high enough evasion
+	// But if a person has jedi-like accuracy and the opponent jedi-like evasion, perhaps they cancel
+	// If accuracy is less than perfect but evasion is nothing, there should still be a chance of missing.
+	if (chanceToHit <= 0)
+		return false;
+	else if (Math.random() > chanceToHit)
+		return false;
+	else
+		return true;
 };
 
 Manager.prototype.getAffectedPlayerState = function(response, playerState, isDefense) {
