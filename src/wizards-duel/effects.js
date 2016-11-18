@@ -81,8 +81,8 @@ var effects = {
 
 				// Narrate what just happened
 				response.send(
-					'@' + modifiedPlayerState.name + ' attempts to utter the _' + spell.incantation + '_ ' +
-					'but is confused and instead utters _' + randomSpell.incantation + '_.'
+					`@${modifiedPlayerState.name} attempts to utter the _${spell.incantation}_ ` +
+					`but is confused and instead utters _${randomSpell.incantation}_.`
 				);
 
 				manager.attemptSpellCast(response, modifiedPlayerState, randomSpell, onSelf);

@@ -27,7 +27,7 @@ Manager.prototype.registerListeners = function() {
 
 	// Register the spell listeners
 	Spells.each(function(spell) {
-		var regex = new RegExp('^' + spell.incantation + '(\\sself)?!', 'i');
+		var regex = new RegExp(`^${spell.incantation}(\\sself)?!`, 'i');
 
 		robot.hear(regex, function(res) {
 			var onSelf = res.match[1];
@@ -69,7 +69,7 @@ Manager.prototype.registerListeners = function() {
 	// Listen for spell-list requests
 	robot.hear(/list spells/i, function(res) {
 		var spellNames = Spells.spells.map(function(spell) {
-			return ' - ' + spell.incantation;
+			return ` - ${spell.incantation}`;
 		});
 
 		res.send([
@@ -82,7 +82,7 @@ Manager.prototype.registerListeners = function() {
 };
 
 Manager.getDuelKey = function(challenger, challengee) {
-	return 'duel-status:' + challenger + '-' + challengee;
+	return `duel-status:${challenger}-${challengee}`;
 };
 
 Manager.prototype.getDuelStatus = function(challenger, challengee) {
@@ -94,7 +94,7 @@ Manager.prototype.setDuelStatus = function(challenger, challengee, status) {
 };
 
 Manager.getPlayerStateKey = function(name) {
-	return name + '.duel-info';
+	return `${name}.duel-info`;
 };
 
 Manager.prototype.getPlayerState = function(name) {
@@ -106,7 +106,7 @@ Manager.prototype.setPlayerState = function(name, state) {
 };
 
 Manager.getTurnKey = function(challenger, challengee) {
-	return 'duel-turn:' + challenger + '-' + challengee;
+	return `duel-turn:${challenger}-${challengee}`;
 };
 
 Manager.prototype.startPassiveTurn = function(player, challenger, challengee) {
@@ -181,15 +181,15 @@ Manager.prototype.resetPlayerStateTurnVars = function(player, playerState) {
 Manager.prototype.challenge = function(response, challenger, challengee) {
 	var challengerState = this.getPlayerState(challenger);
 	if (challengerState) {
-		response.reply('Thou art already dueling with @' + challengerState.opponent + '!');
+		response.reply(`Thou art already dueling with @${challengerState.opponent}!`);
 	}
 	else {
 		// Set the status
 		this.setDuelStatus(challenger, challengee, STATUS_CHALLENGE_SENT);
 
 		response.send([
-			'@' + challenger + ' has challenged @' + challengee + ' to a wizard\'s duel!  _Does @' + challengee + ' accept?_',
-			'Type "I accept @' + challenger + '\'s challenge." to accept.',
+			`@${challenger} has challenged @${challengee} to a wizard\'s duel!  _Does @${challengee} accept?_`,
+			`Type "I accept @${challenger}'s challenge." to accept.`,
 		].join('\n'));
 	}
 };
@@ -205,21 +205,21 @@ Manager.prototype.acceptChallenge = function(response, challenger, challengee) {
 
 		response.send([
 			'*Hear ye! Hear ye!*',
-			'A duel shall now commence between @' + challenger +' and @' + challengee + '!' +
-			'@' + startingPlayer + ', you have won the coin toss and may start your offensive turn.  ' +
+			`A duel shall now commence between @${challenger} and @${challengee}!` +
+			`@${startingPlayer}, you have won the coin toss and may start your offensive turn.  `
 			'For a list of rules, type "dueling rules". ' +
 			'For the list of spells, type "list spells"',
 		].join('\n'));
 	}
 	else {
-		response.reply('@' + challenger + ' did not challenge you.');
+		response.reply(`@${challenger} did not challenge you.`);
 	}
 };
 
 Manager.prototype.resign = function(response, player, opponent) {
 	var playerState = this.getPlayerState(player);
 	if (!playerState || playerState.opponent != opponent) {
-		response.reply('You are not dueling with @' + opponent + '.');
+		response.reply(`You are not dueling with @${opponent}.`);
 	}
 	else {
 		var challenger;
@@ -286,7 +286,7 @@ Manager.prototype.utterIncantation = function(response, player, spell, onSelf) {
 			//   of spell this was and what turn it is.
 			if (!onSelf && !turn.attack) {
 				// They skipped the passive part of their turn
-				response.send('@' + playerState.name + ' skipped his passive turn and went right to the attack!');
+				response.send(`@${playerState.name} skipped his passive turn and went right to the attack!`);
 				// Go straight to the beginning of the opponent's turn
 				this.startPassiveTurn(playerState.opponent, challenger, challengee);
 			}
@@ -325,21 +325,21 @@ Manager.prototype.attemptSpellCast = function(response, playerState, spell, onSe
 		if (onSelf || this.spellHitTarget(response, playerState, spell)) {
 			console.log(spell)
 			spell.cast(this, response, playerState, onSelf);
-			var narration = playerState.name + ' cast ' + spell.incantation;
+			var narration = `${playerState.name} cast ${spell.incantation}`;
 			if (!onSelf)
-				narration += ' on @' + playerState.opponent;
+				narration += ` on @${playerState.opponent}`;
 			narration += '.  ';
 			narration += spell.narration.replace('@target', (onSelf ? playerState.name : playerState.opponent));
 			response.send(narration);
 		}
 		else {
-			response.send('@' + playerState.name + ' fails to hit his target.');
+			response.send(`@${playerState.name} fails to hit his target.`);
 		}
 	}
 	else if (spell.failure)
 		spell.failure(this, response, playerState, onSelf);
 	else
-		response.send('@' + playerState.name + ' fails to cast ' + spell.incantation + '.');
+		response.send(`@${playerState.name} fails to cast ${spell.incantation}.`);
 };
 
 /**
@@ -416,10 +416,10 @@ Manager.prototype.addEffect = function(response, playerState, effectName) {
 	if (negated.length === 0)
 		Set.add(playerState.effects, effectName);
 	else
-		response.send('The ' + effectName + ' has negated @' + playerState.name + '\'s ' + oxfordJoin(negated) + '.');
+		response.send(`The ${effectName} has negated @${playerState.name}'s ${oxfordJoin(negated)}.`);
 
 	if (counteracts.length > 0)
-		response.send('The ' + effectName + ' counteracted @' + playerState.name + '\'s ' + oxfordJoin(counteracted) + '.');
+		response.send(`The ${effectName} counteracted @${playerState.name}'s ${oxfordJoin(counteracted)}.`);
 
 	if (player)
 		this.setPlayerState(player, playerState);
@@ -465,7 +465,7 @@ Manager.prototype.getEffectList = function(player) {
 				counteractedBy.push(effect.noun);
 		}
 		if (counteractedBy.length)
-			line += '(countered by ' + oxfordJoin(counteractedBy) + ')';
+			line += `(countered by ${oxfordJoin(counteractedBy)})`;
 	}
 };
 
