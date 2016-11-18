@@ -1,4 +1,4 @@
-var _ = require('underscore');
+import _ from 'underscore';
 
 var spells = [
 	{
@@ -86,9 +86,9 @@ var Spells = {
 		return _.findWhere(this.spells, { incantation: incantation });
 	},
 
-	each: _.partial(_.each, this.spells),
+	each: _.partial(_.each, spells),
 
 };
 
 
-module.exports = Spells;
+export default Spells;

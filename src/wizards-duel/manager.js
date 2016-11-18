@@ -1,15 +1,15 @@
-var _          = require('underscore');
-var oxfordJoin = require('oxford-join');
-var Set        = require('./set');
-var Effects    = require('./effects.js');
-var Spells     = require('./spells.js');
+import _          from 'underscore';
+import oxfordJoin from 'oxford-join';
+import Set        from './set';
+import Effects    from './effects.js';
+import Spells     from './spells.js';
 
 /**
  * Dueling statuses
  */
-var STATUS_NOT_DUELING = 0;
-var STATUS_CHALLENGE_SENT = 1;
-var STATUS_DUELING = 2;
+const STATUS_NOT_DUELING = 0;
+const STATUS_CHALLENGE_SENT = 1;
+const STATUS_DUELING = 2;
 
 /**
  * Manager manages the games state and everything

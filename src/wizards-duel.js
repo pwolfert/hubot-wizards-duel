@@ -8,11 +8,9 @@
 //   pwolfert
 //
 
-var effects = require('./wizards-duel/effects.js');
-var spells  = require('./wizards-duel/spells.js');
-var Manager = require('./wizards-duel/manager.js');
+import Manager from './wizards-duel/manager';
 
-module.exports = function(robot) {
+export default function(robot) {
 
 	var manager = new Manager(robot);
 

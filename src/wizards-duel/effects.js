@@ -1,5 +1,5 @@
-var _      = require('underscore');
-var spells = require('./spells');
+import _      from 'underscore';
+import spells from './spells';
 
 var effects = {
 	'fire': {
@@ -94,7 +94,7 @@ var effects = {
 	'clarity': {
 		negates: [ 'confusion', 'intoxication' ],
 	},
-	'intoxication': {
+	'intoxication': { // Spoonerisms
 		negates: [ 'clarity' ],
 		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
 			var words = spell.incantation.split(' ');
@@ -186,11 +186,11 @@ var Effects = {
 		return new Effect(effectName, effect);
 	}),
 
-	get: function(effectName) {
+	get(effectName) {
 		// Create an object with callable functions
 		return this.effects[effectName];
 	},
 
 };
 
-module.exports = Effects;
+export default Effects;
