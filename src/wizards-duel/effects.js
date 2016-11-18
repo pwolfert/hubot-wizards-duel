@@ -1,6 +1,19 @@
 import _      from 'underscore';
 import spells from './spells';
 
+/**
+ *
+ * Effect configuration options: {
+ *   negates: []     // Both effects are removed
+ *   counteracts: [] // Both effects remain but are not applied
+ *   voids: []       // This effect remains effective, but the ones listed are not applied
+ *
+ *
+ *
+ * }
+ */
+
+
 var effects = {
 	'fire': {
 		noun: 'burning',

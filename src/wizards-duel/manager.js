@@ -206,7 +206,7 @@ Manager.prototype.acceptChallenge = function(response, challenger, challengee) {
 		response.send([
 			'*Hear ye! Hear ye!*',
 			`A duel shall now commence between @${challenger} and @${challengee}!` +
-			`@${startingPlayer}, you have won the coin toss and may start your offensive turn.  `
+			`@${startingPlayer}, you have won the coin toss and may start your offensive turn.  ` +
 			'For a list of rules, type "dueling rules". ' +
 			'For the list of spells, type "list spells"',
 		].join('\n'));
