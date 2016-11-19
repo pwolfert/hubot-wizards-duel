@@ -297,48 +297,6 @@ class Manager {
 		}
 	}
 
-	/**
-	 * Adds an effect to the given player.  If just the player name is passed,
-	 *   it will add the effect and then immediately save in the database.
-	 *
-	 * @param {(Object|string)} player - either the player object or player name
-	 * @param {string} effectName - the effects array key for the effect
-	 */
-	addEffect(player, effectName) {
-		var playerName;
-		if (typeof player === 'string') {
-			playerName = player;
-			player = new Player(manager, playerName);
-		}
-
-		player.addEffect(effectName);
-
-		// If it was just the name and not the object passed in, we want to save it
-		if (playerName)
-			player.save();
-	}
-
-	/**
-	 * Removes an effect from the player.  If just the player name is passed,
-	 *   it will remove the effect and then immediately save in the database.
-	 *
-	 * @param {(Object|string)} playerState - either the playerState object or player name
-	 * @param {string} effectName - the effects array key for the effect
-	 */
-	removeEffect(player, effectName) {
-		var playerName;
-		if (typeof player === 'string') {
-			playerName = player;
-			player = new Player(manager, playerName);
-		}
-
-		player.removeEffect(effectName);
-
-		// If it was just the name and not the object passed in, we want to save it
-		if (playerName)
-			player.save();
-	}
-
 	getRules() {
 		return [
 			'```',
