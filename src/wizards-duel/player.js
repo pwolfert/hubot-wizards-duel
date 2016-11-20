@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import oxfordJoin from 'oxford-join';
 import clamp from 'clamp';
 
@@ -56,6 +57,7 @@ class Player {
 			turnSpellcasting: playerState.spellcasting,
 			turnAccuracy:     playerState.accuracy,
 			turnEvasion:      playerState.evasion,
+			turnShield:       0
 		});
 	}
 
@@ -73,12 +75,8 @@ class Player {
 		// Call any beforeCast functions from effects
 		var attemptCast = true;
 		for (let effectName of modifiedState.effects) {
-			var effect = Effects.get(effectName);
-			if (effect.beforeCast &&
-				effect.beforeCast(this.manager, this, spell, onSelf) === false
-			) {
+			if (Effects.get(effectName).beforeCast(this.manager, this, spell, onSelf) === false)
 				attemptCast = false;
-			}
 		}
 
 		// Attempt to perform the spell
@@ -106,17 +104,29 @@ class Player {
 	}
 
 	spellHitTarget(spell) {
+		var playerState = this.getModifiedState();
 		var opponent = new Player(this.manager, this.state.opponent);
 		var opponentState = opponent.getModifiedState(true);
-		var accuracy = clamp(this.getModifiedState().turnAccuracy, MIN_ACCURACY, MAX_ACCURACY);
+
+		var accuracy = clamp(playerState.turnAccuracy, MIN_ACCURACY, MAX_ACCURACY);
 		var evasion  = clamp(opponentState.turnEvasion,  MIN_EVASION, MAX_EVASION);
+
 		var chanceToHit = ((accuracy - evasion) / accuracy);
 		if (chanceToHit <= 0)
 			return false;
 		else if (Math.random() > chanceToHit)
 			return false;
-		else
-			return true;
+		else {
+			var activeEffects = Player.getActiveEffects(opponentState);
+			var effectsAllowHit = true;
+
+			for (let effectName of activeEffects) {
+				if (Effects.get(effectName).beforeHit(this.manager, opponent, spell, false) === false)
+					effectsAllowHit = false;
+			}
+
+			return effectsAllowHit;
+		}
 	}
 
 	/**
@@ -190,8 +200,18 @@ class Player {
 
 	static getAffectedPlayerState(manager, playerState, isDefense) {
 		var modifiedPlayerState = _.extend({}, playerState);
+		var activeEffects = Player.getActiveEffects(playerState);
 
+		for (let effectName of activeEffects)
+			Effects.get(effectName).modify(manager, modifiedPlayerState, isDefense);
+
+		return modifiedPlayerState;
+	}
+
+	static getActiveEffects(playerState) {
+		var effects = playerState.effects;
 		var activeEffects = [];
+
 		for (let i = 0; i < effects.length; i++) {
 			// Search for countering effects
 			var counteracted = false;
@@ -207,10 +227,7 @@ class Player {
 				activeEffects.push(effects[i]);
 		}
 
-		for (let effectName of activeEffects)
-			Effects.get(effectName).modify(manager, modifiedPlayerState, isDefense);
-
-		return modifiedPlayerState;
+		return activeEffects;
 	}
 
 	/**

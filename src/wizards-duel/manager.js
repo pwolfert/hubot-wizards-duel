@@ -190,6 +190,7 @@ class Manager {
 		this.setDuelStatus(challenger, challengee, STATUS_NOT_DUELING);
 
 		// TODO: talk about results
+		// https://api.slack.com/docs/message-attachments
 	}
 
 	challenge(challenger, challengee) {

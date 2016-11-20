@@ -11,6 +11,32 @@ import Player from './player';
  * }
  */
 var effects = {
+	// This is just an example that includes all the possibilities
+	'example': {
+		noun: 'example',
+		adjective: 'exampled',
+		negates: [ 'fire' ],
+		counteracts: [ 'fog' ],
+		modifiers: [
+			[ 'turnSpellcasting', '+=', 0.1, 'makes it easier to think' ],
+			[ 'turnAccuracy',     '-=', 0.2, 'makes it difficult to see' ],
+			[ 'turnEvasion',      '+=', 0.1, 'makes it easier to move' ],
+			[ 'turnShield',       '+=', 0.1, 'provides a minor magical shield' ]
+		],
+		modify: function(manager, playerState, isDefense) {
+			playerState.modified = true;
+			playerState.modifiedIsDefense = isDefense;
+		},
+		// Called before a player attempts a spell cast
+		beforeCast: function(manager, player, spell, onSelf) {
+			return false;
+		},
+		// Called when a player is about to be hit by a spell
+		beforeHit: function(manager, player, spell, onSelf) {
+
+		}
+	},
+
 	'fire': {
 		noun: 'burning',
 		adjective: 'on fire',
@@ -73,12 +99,8 @@ var effects = {
 		},
 	},
 	'small-nose': {
+		counteracts: [ 'stench', 'fragrance' ],
 		negates: [ 'large-nose' ],
-		modify: function(manager, playerState, isDefense) {
-			// Hmm, but how do we reverse another effect?  Do we need to
-			// have inverseModify callback?  Or do we just start listing
-			// out modifiers instead of having a modify function?
-		},
 	},
 	'confusion': {
 		negates: [ 'clarity' ],
@@ -157,7 +179,7 @@ class Effect {
 
 		// Call modify function if it exists
 		if (this.effect.modify)
-			this.effect.modify(arguments);
+			this.effect.modify.apply(this, arguments);
 	}
 
 	inverseModify(manager, playerState, isDefense) {
@@ -186,11 +208,11 @@ class Effect {
 		}
 	}
 
-	narrateDefenseModifiers(playerState) {
-
+	getDefenseModifiersNarration(playerState) {
+		const defenseModifiers = [ 'turnEvasion' ]
 	}
 
-	narrateOffenseModifiers(playerState) {
+	getOffenseModifiersNarration(playerState) {
 		// 'Spellcasting chance is lowered'
 	}
 
@@ -208,6 +230,28 @@ class Effect {
 			return false;
 	}
 
+	/**
+	 * Called on every active effect before a player attempts a spell cast.
+	 *   If `false` is returned, the spell won't be cast.
+	 */
+	beforeCast(manager, player, spell, onSelf) {
+		if (this.effect.beforeCast)
+			return this.effect.beforeCast.apply(this, arguments);
+
+		return true;
+	}
+
+	/**
+	 * Called on every active effect when a player is about to be hit by a spell.
+	 *   If `false` is returned, the spell won't hit.
+	 */
+	beforeHit(manager, player, spell, onSelf) {
+		if (this.effect.beforeHit)
+			return this.effect.beforeHit.apply(this, arguments);
+
+		return true;
+	}
+
 }
 
 
@@ -221,6 +265,13 @@ var Effects = {
 		// Create an object with callable functions
 		return this.effects[effectName];
 	},
+
+	/**
+	 * Only used for testing
+	 */
+	create(effectName, config) {
+		return new Effect(effectName, config);
+	}
 
 };
 
