@@ -1,12 +1,12 @@
-var Helper  = require('hubot-test-helper');
-var chai    = require('chai');
-var Manager = require('../src/wizards-duel/manager.js');
+import Helper  from 'hubot-test-helper';
+import chai    from 'chai';
+import Manager from '../src/wizards-duel/manager.js';
 
 var expect = chai.expect;
 var helper = new Helper('../src/wizards-duel.js');
 
 
-describe('wizards-duel', () => {
+describe('Manager', () => {
 	var message1 = 'I challenge @bob to a wizards duel!';
 	var message2 = 'I accept @alice\'s challenge';
 	var attackMessage1 = 'madefio!';

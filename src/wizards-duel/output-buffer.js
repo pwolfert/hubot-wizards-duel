@@ -47,8 +47,10 @@ class OutputBuffer {
 	}
 
 	endMessage() {
-		this.messages.push(this.runningMessage);
-		this.runningMessage = null;
+		if (this.runningMessage) {
+			this.messages.push(this.runningMessage);
+			this.runningMessage = null;
+		}
 	}
 
 	/**
@@ -58,7 +60,7 @@ class OutputBuffer {
 		if (!this.runningMessage)
 			this.startMessage(MESSAGE_SEND);
 
-		this.runningMessage += output;
+		this.runningMessage.content += output;
 	}
 
 	startSend() { this.startMessage(MESSAGE_SEND); }
@@ -68,5 +70,8 @@ class OutputBuffer {
 	endReply()   { this.endMessage(); }
 
 }
+
+OutputBuffer.MESSAGE_SEND  = MESSAGE_SEND;
+OutputBuffer.MESSAGE_REPLY = MESSAGE_REPLY;
 
 export default OutputBuffer;
