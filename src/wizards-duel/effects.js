@@ -1,5 +1,5 @@
 import _      from 'underscore';
-import spells from './spells';
+import Spells from './spells';
 import Player from './player';
 
 /**
@@ -107,8 +107,7 @@ var effects = {
 		beforeCast: function(manager, player, spell, onSelf) {
 			// 25% chance of casting a completely different spell
 			if (Math.random() < 0.25) {
-				var spellsArray = _.values(spells);
-				var randomSpell = _.sample(spellsArray);
+				var randomSpell = _.sample(Spells.spells);
 
 				// Narrate what just happened
 				manager.output.send(
@@ -136,6 +135,12 @@ var effects = {
 			}
 		},
 	},
+	'spectral': {
+		beforeHit: function(manager, player, spell, onSelf) {
+			manager.output.append(`The ${spell.projectileDescription} passes straight through @${player.state.name} with no effect`);
+			return false;
+		}
+	}
 };
 
 /**

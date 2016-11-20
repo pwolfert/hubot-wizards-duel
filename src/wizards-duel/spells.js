@@ -48,11 +48,38 @@ var spells = [
 ];
 
 
-var Spell = function(spell) {
-	_.extend(this, spell);
-	this.spell = spell;
+class Spell {
 
-	this.cast = function(manager, player, onSelf) {
+	constructor(spell) {
+		this.spell = spell;
+	}
+
+	get projectileDescription() {
+		if (this.spell.projectileDescription)
+			return this.spell.projectileDescription;
+		else
+			return 'bolt of magic';
+	}
+
+	get incantation() {
+		return this.spell.incantation;
+	}
+
+	get description() {
+		return this.spell.description;
+	}
+
+	get narration() {
+		if (this.spell.narration)
+			return this.spell.narration;
+		return '';
+	}
+
+	get effects() {
+		return this.spell.effects
+	}
+
+	cast(manager, player, onSelf) {
 		var i;
 		var target = onSelf ? player : new Player(manager, player.state.opponent);
 
@@ -76,11 +103,15 @@ var Spell = function(spell) {
 			target.save();
 
 		// Call the spell config's cast function if it exists
-		if (spell.cast)
-			spell.cast(arguments);
-	};
-};
+		if (this.spell.cast)
+			this.spell.cast.apply(this, arguments);
+	}
 
+	getNarration(target) {
+		return this.narration.replace('@target', target);
+	}
+
+}
 
 var Spells = {
 

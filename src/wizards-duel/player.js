@@ -41,10 +41,10 @@ class Player {
 			isChallenger: isChallenger,
 			opponent: opponent,
 			effects: [],
-			health: 100,
 			spellcasting: 1,
 			accuracy: 1,
 			evasion: 0,
+			pain: 0,
 		};
 
 		Player.resetTurnVars(playerState);
@@ -57,7 +57,8 @@ class Player {
 			turnSpellcasting: playerState.spellcasting,
 			turnAccuracy:     playerState.accuracy,
 			turnEvasion:      playerState.evasion,
-			turnShield:       0
+			turnShield:       0,
+			turnPain:         playerState.pain,
 		});
 	}
 
@@ -89,7 +90,7 @@ class Player {
 					if (!onSelf)
 						narration += ` on @${this.state.opponent}`;
 					narration += '.  ';
-					narration += spell.narration.replace('@target', (onSelf ? this.state.name : this.state.opponent));
+					narration += spell.getNarration(onSelf ? this.state.name : this.state.opponent);
 					this.output.send(narration);
 				}
 				else {
