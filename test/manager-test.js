@@ -1,6 +1,6 @@
 import Helper  from 'hubot-test-helper';
 import chai    from 'chai';
-import Manager from '../src/wizards-duel/manager.js';
+import Manager from '../src/wizards-duel/manager';
 
 var expect = chai.expect;
 var helper = new Helper('../src/wizards-duel.js');
@@ -14,9 +14,11 @@ describe('Manager', () => {
 	describe('Sending a Challenge', () => {
 		var room;
 
-		before(() => {
+		before((done) => {
 			room = helper.createRoom();
-			room.user.say('alice', message1).then();
+			room.user.say('alice', message1).then(() => {
+				done();
+			});
 		});
 
 		after(() => {
@@ -27,7 +29,7 @@ describe('Manager', () => {
 			var expectedResult = [
 				['alice', message1],
 				['hubot', [
-					'@alice hath challenged @bob to a wizard\'s duel!  _Doth @bob accept?_',
+					'@alice has challenged @bob to a wizard\'s duel!  _Does @bob accept?_',
 					'Type "I accept @alice\'s challenge." to accept.'
 				].join('\n')]
 			];
@@ -72,9 +74,10 @@ describe('Manager', () => {
 				['bob', message2],
 				['hubot', [
 					'*Hear ye! Hear ye!*',
-					'A duel shall now commence between @alice and @bob!' +
-					'@' + startingPlayer + ', thou hast won the coin toss and mayst begin first with an attack.  ' +
-					'Whosoever requireth the list of rules shouldst only type "dueling rules".'
+					`A duel shall now commence between @alice and @bob!` +
+					`@${startingPlayer}, you have won the coin toss and may start your offensive turn.  ` +
+					'For a list of rules, type "dueling rules". ' +
+					'For the list of spells, type "list spells"',
 				].join('\n')]
 			];
 

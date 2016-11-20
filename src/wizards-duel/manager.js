@@ -1,8 +1,10 @@
-import _          from 'underscore';
-import oxfordJoin from 'oxford-join';
-import Set        from './set';
-import Effects    from './effects.js';
-import Spells     from './spells.js';
+import _            from 'underscore';
+import oxfordJoin   from 'oxford-join';
+import Set          from './set';
+import Effects      from './effects';
+import Spells       from './spells';
+import Player       from './player';
+import OutputBuffer from './output-buffer';
 
 /**
  * Dueling statuses
@@ -117,9 +119,9 @@ class Manager {
 		this.outputBuffers.push(new OutputBuffer(response));
 	}
 
-	flushOutput(response) {
+	flushOutput() {
 		var outputBuffer = this.outputBuffers.pop();
-		outputBuffer.flush(response);
+		outputBuffer.flush();
 	}
 
 	// ---------------------------------------------------------------------------------
@@ -158,6 +160,10 @@ class Manager {
 		this.setPlayerState(name, Player.getInitialState(name, isChallenger, opponent));
 	}
 
+	resetPlayerStateTurnVars(name) {
+
+	}
+
 	static getTurnKey(challenger, challengee) {
 		return `duel-turn:${challenger}-${challengee}`;
 	}
@@ -167,8 +173,6 @@ class Manager {
 			player: player,
 			passive: true,
 		});
-
-		this.resetPlayerStateTurnVars(player);
 	}
 
 	startAttackTurn(player, challenger, challengee) {
@@ -176,8 +180,6 @@ class Manager {
 			player: player,
 			attack: true,
 		});
-
-		this.resetPlayerStateTurnVars(player);
 	}
 
 	getCurrentTurn(challenger, challengee) {
@@ -257,6 +259,7 @@ class Manager {
 
 	utterIncantation(playerName, spell, onSelf) {
 		var player = new Player(this, playerName);
+		player.resetTurnVars();
 
 		if (!player.state) {
 			this.output.reply('Practice makes perfect.');
