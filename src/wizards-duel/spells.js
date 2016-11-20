@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Player from './player';
 
-var spells = [
+var spellConfigs = [
 	{
 		incantation: 'volito',
 		description: 'levitates',
@@ -47,11 +47,14 @@ var spells = [
 	},
 ];
 
-
+/**
+ * Class representing a spell, wrapping additional functionality around
+ *   the configs and filling in holes in the information given.
+ */
 class Spell {
 
-	constructor(spell) {
-		this.spell = spell;
+	constructor(spellConfig) {
+		this.spell = spellConfig;
 	}
 
 	get projectileDescription() {
@@ -113,11 +116,17 @@ class Spell {
 
 }
 
+// Create Spell instances out of the configs
+var spells = _.map(spellConfigs, function(spell) {
+	return new Spell(spell);
+});
+
+/**
+ * The interface through which we will access spells from other modules
+ */
 var Spells = {
 
-	spells: _.map(spells, function(spell) {
-		return new Spell(spell);
-	}),
+	spells: spells,
 
 	get: function(incantation) {
 		return _.findWhere(this.spells, { incantation: incantation });

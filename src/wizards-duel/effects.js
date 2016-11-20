@@ -10,7 +10,7 @@ import Player from './player';
  *
  * }
  */
-var effects = {
+var effectConfigs = {
 	// This is just an example that includes all the possibilities
 	'example': {
 		noun: 'example',
@@ -149,8 +149,8 @@ var effects = {
  */
 class Effect {
 
-	constructor(name, effect) {
-		this.effect = effect;
+	constructor(name, effectConfig) {
+		this.effect = effectConfig;
 		this.name = name;
 	}
 
@@ -260,9 +260,12 @@ class Effect {
 }
 
 
+/**
+ * The interface through which we will access effects from other modules
+ */
 var Effects = {
 
-	effects: _.mapObject(effects, function(effect, effectName) {
+	effects: _.mapObject(effectConfigs, function(effect, effectName) {
 		return new Effect(effectName, effect);
 	}),
 
