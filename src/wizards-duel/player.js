@@ -1,4 +1,5 @@
 import oxfordJoin from 'oxford-join';
+import clamp from 'clamp';
 
 const MIN_ACCURACY = 0.05;
 const MAX_ACCURACY = 0.95;
@@ -107,8 +108,8 @@ class Player {
 	spellHitTarget(spell) {
 		var opponent = new Player(this.manager, this.state.opponent);
 		var opponentState = opponent.getModifiedState(true);
-		var accuracy = Math.min(Math.max(this.getModifiedState().turnAccuracy, MIN_ACCURACY), MAX_ACCURACY);
-		var evasion  = Math.min(Math.max(opponentState.turnEvasion,  MIN_EVASION),  MAX_EVASION);
+		var accuracy = clamp(this.getModifiedState().turnAccuracy, MIN_ACCURACY, MAX_ACCURACY);
+		var evasion  = clamp(opponentState.turnEvasion,  MIN_EVASION, MAX_EVASION);
 		var chanceToHit = ((accuracy - evasion) / accuracy);
 		if (chanceToHit <= 0)
 			return false;

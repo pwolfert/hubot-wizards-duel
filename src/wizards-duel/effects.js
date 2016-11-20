@@ -112,8 +112,8 @@ var effects = {
 				// Swap the beginning of the first two words
 				// Maybe figure out where the first vowel begins and select the beginning to that
 			}
-		}
-	}
+		},
+	},
 };
 
 /**
