@@ -123,7 +123,6 @@ var effects = {
 class Effect {
 
 	constructor(name, effect) {
-		_.extend(this, effect);
 		this.effect = effect;
 		this.name = name;
 	}
@@ -193,6 +192,20 @@ class Effect {
 
 	narrateOffenseModifiers(playerState) {
 		// 'Spellcasting chance is lowered'
+	}
+
+	counteracts(effectName) {
+		if (this.effect.counteracts)
+			return this.effect.counteracts.includes(effectName);
+		else
+			return false;
+	}
+
+	negates(effectName) {
+		if (this.effect.negates)
+			return this.effect.negates.includes(effectName);
+		else
+			return false;
 	}
 
 }

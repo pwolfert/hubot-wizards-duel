@@ -190,8 +190,24 @@ class Player {
 	static getAffectedPlayerState(manager, playerState, isDefense) {
 		var modifiedPlayerState = _.extend({}, playerState);
 
-		for (let i = 0; i < playerState.effects.length; i++)
-			Effects.get(playerState.effects[i]).modify(manager, modifiedPlayerState, isDefense);
+		var activeEffects = [];
+		for (let i = 0; i < effects.length; i++) {
+			// Search for countering effects
+			var counteracted = false;
+			for (let j = 0; j < effects.length; j++) {
+				var possiblyCounteractingEffect = Effects.get(effects[j]);
+				if (possiblyCounteractingEffect.counteracts(effects[i])) {
+					counteracted = true;
+					break;
+				}
+			}
+
+			if (!counteracted)
+				activeEffects.push(effects[i]);
+		}
+
+		for (let effectName of activeEffects)
+			Effects.get(effectName).modify(manager, modifiedPlayerState, isDefense);
 
 		return modifiedPlayerState;
 	}
@@ -213,28 +229,14 @@ class Player {
 			// Search for countering effects
 			var counteractedBy = [];
 			for (let j = 0; j < effects.length; j++) {
-				var effect = Effects.get(effects[j]);
-				if (effect.counteracts && effect.counteracts.indexOf(effects[i]) !== -1)
-					counteractedBy.push(effect.noun);
+				var possiblyCounteractingEffect = Effects.get(effects[j]);
+				if (possiblyCounteractingEffect.counteracts(effects[i]))
+					counteractedBy.push(possiblyCounteractingEffect.noun);
 			}
 
-			// Search for effects that cancel this one
-			var canceledBy = [];
-			for (let j = 0; j < effects.length; j++) {
-				var effect = Effects.get(effects[j]);
-				if (effect.cancels && effect.cancels.indexOf(effects[i]) !== -1)
-					canceledBy.push(effect.noun);
-			}
-
-			if (canceledBy.length || counteractedBy.length) {
+			if (counteractedBy.length) {
 				// Show the name of the effect with a strikethrough
-				line += `~${noun}~`;
-
-				if (canceledBy.length)
-					line += ` (canceled by ${oxfordJoin(canceledBy)})`;
-
-				if (counteractedBy.length)
-					line += ` (countered by ${oxfordJoin(counteractedBy)})`;
+				line += `~${noun}~ (counteracted by ${oxfordJoin(counteractedBy)})`;
 			}
 			else {
 				// Show it normally
