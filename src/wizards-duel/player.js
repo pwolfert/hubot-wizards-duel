@@ -1,6 +1,8 @@
 import _ from 'underscore';
 import oxfordJoin from 'oxford-join';
 import clamp from 'clamp';
+import Effects from './effects';
+import SetFunctions from './set';
 
 const MIN_ACCURACY = 0.05;
 const MAX_ACCURACY = 0.95;
@@ -146,29 +148,25 @@ class Player {
 	 */
 	addEffect(effectName) {
 		var negated = [];
-		var negates = Effects.get(effectName).negates;
-		if (negates) {
-			for (let i = 0; i < negates.length; i++) {
-				if (Set.contains(this.state.effects, negates[i])) {
-					Set.remove(this.state.effects, negates[i]);
-					negated.push(negates[i]);
-				}
+		var negates = Effects.get(effectName).negatedEffects;
+		for (let negatedEffectName of negates) {
+			if (SetFunctions.includes(this.state.effects, negatedEffectName)) {
+				SetFunctions.remove(this.state.effects, negatedEffectName);
+				negated.push(negatedEffectName);
 			}
 		}
 
-		var counteracts = [];
-		var counteracts = Effects.get(effectName).counteracts;
-		if (counteracts) {
-			for (let i = 0; i < counteracts.length; i++) {
-				if (Set.contains(this.state.effects, counteracts[i]))
-					counteracts.push(counteracts[i]);
-			}
+		var counteracted = [];
+		var counteracts = Effects.get(effectName).counteractedEffects;
+		for (let counteractedEffectName of counteracts) {
+			if (SetFunctions.includes(this.state.effects, counteractedEffectName))
+				counteracted.push(counteractedEffectName);
 		}
 
 		if (!negated.length) {
-			Set.add(this.state.effects, effectName);
+			SetFunctions.add(this.state.effects, effectName);
 
-			if (counteracts.length > 0)
+			if (counteracted.length > 0)
 				this.manager.output.append(`The ${effectName} counteracted @${this.state.name}'s ${oxfordJoin(counteracted)}. `);
 		}
 		else
@@ -181,7 +179,7 @@ class Player {
 	 * @param {string} effectName - the effects array key for the effect
 	 */
 	removeEffect(effectName) {
-		Set.remove(this.state.effects, effectName);
+		SetFunctions.remove(this.state.effects, effectName);
 	}
 
 	getModifiedState(isDefense) {

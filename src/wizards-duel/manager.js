@@ -1,6 +1,6 @@
 import _            from 'underscore';
 import oxfordJoin   from 'oxford-join';
-import Set          from './set';
+import SetFunctions from './set';
 import Effects      from './effects';
 import Spells       from './spells';
 import Player       from './player';

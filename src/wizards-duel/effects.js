@@ -90,7 +90,7 @@ var effectConfigs = {
 		negates: [ 'small-nose' ],
 		modify: function(manager, playerState, isDefense) {
 			var opponent = new Player(manager, playerState.opponent);
-			if (playerState.effects.contains('stench') || opponent.state.effects.contains('stench')) {
+			if (playerState.effects.includes('stench') || opponent.state.effects.includes('stench')) {
 				// If the effect is on us this applies the effect again, which
 				//   effectively doubles it.  If the effect is on the opponent,
 				//   we want it now applied to us as well.
@@ -152,6 +152,18 @@ class Effect {
 	constructor(name, effectConfig) {
 		this.effect = effectConfig;
 		this.name = name;
+	}
+
+	get negatedEffects() {
+		if (this.effect.negates)
+			return this.effect.negates;
+		return [];
+	}
+
+	get counteractedEffects() {
+		if (this.effect.counteracts)
+			return this.effect.counteracts;
+		return [];
 	}
 
 	modify(manager, playerState, isDefense) {

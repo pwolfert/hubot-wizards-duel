@@ -79,7 +79,15 @@ class Spell {
 	}
 
 	get effects() {
-		return this.spell.effects
+		if (this.spell.effects)
+			return this.spell.effects;
+		return [];
+	}
+
+	get removedEffects() {
+		if (this.spell.removedEffects)
+			return this.spell.removedEffects;
+		return [];
 	}
 
 	cast(manager, player, onSelf) {
@@ -87,18 +95,13 @@ class Spell {
 		var target = onSelf ? player : new Player(manager, player.state.opponent);
 
 		// Add effects as appropriate
-		if (this.effects) {
-			for (i = 0; i < this.effects.length; i++)
-				target.addEffect(this.effects[i]);
-		}
+		for (i = 0; i < this.effects.length; i++)
+			target.addEffect(this.effects[i]);
 
 		// Remove effects as appropriate
-		if (this.removedEffects) {
-			var targetState = onSelf ? player : manager.getPlayerState(player.state.opponent);
-			for (i = 0; i < this.removedEffects.length; i++) {
-				if (targetState.effects.contains(this.removedEffects[i]))
-					target.removeEffect(this.removedEffects[i]);
-			}
+		for (i = 0; i < this.removedEffects.length; i++) {
+			if (target.state.effects.includes(this.removedEffects[i]))
+				target.removeEffect(this.removedEffects[i]);
 		}
 
 		// If it's the opponent, we need to save
@@ -111,7 +114,7 @@ class Spell {
 	}
 
 	getNarration(target) {
-		return this.narration.replace('@target', target);
+		return this.narration.replace('@target', '@' + target);
 	}
 
 }
@@ -128,11 +131,18 @@ var Spells = {
 
 	spells: spells,
 
-	get: function(incantation) {
+	get(incantation) {
 		return _.findWhere(this.spells, { incantation: incantation });
 	},
 
 	each: _.partial(_.each, spells),
+
+	/**
+	 * Only used for testing
+	 */
+	create(config) {
+		return new Spell(config);
+	}
 
 };
 

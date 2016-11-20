@@ -1,21 +1,21 @@
 
-var Set = {
+var SetFunctions = {
 
-	add: function(array, item) {
+	add(array, item) {
 		if (array.indexOf(item) === -1)
 			array.push(item);
 	},
 
-	remove: function(array, item) {
+	remove(array, item) {
 		var index = array.indexOf(item);
 		if (index !== -1)
 			array.splice(index, 1);
 	},
 
-	contains: function(array, item) {
+	includes(array, item) {
 		return (array.indexOf(item) !== -1);
 	},
 
 };
 
-export default Set;
+export default SetFunctions;
