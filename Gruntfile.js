@@ -7,6 +7,7 @@ module.exports = function (grunt) {
 			test: {
 				options: {
 					reporter: 'spec',
+					require: 'babel-register',
 				},
 				src: ['test/**/*.js']
 			}
@@ -46,5 +47,6 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('build', ['babel:build']);
 	grunt.registerTask('test', ['mochaTest']);
+	grunt.registerTask('lint', ['eslint']);
 	grunt.registerTask('default', ['eslint', 'test']);
 };
