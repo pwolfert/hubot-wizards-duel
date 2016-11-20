@@ -81,7 +81,7 @@ class Manager {
 		// Listen for effects-list requests
 		this.hear(/list effects/i, (res) => {
 			var playerName = res.message.user.name;
-			var player = new Player(playerName);
+			var player = new Player(this, playerName);
 
 			this.output.send(
 				`@${playerName}'s current effects:\n` +
@@ -255,7 +255,7 @@ class Manager {
 	}
 
 	utterIncantation(playerName, spell, onSelf) {
-		var player = new Player(playerName);
+		var player = new Player(this, playerName);
 
 		if (!player.state) {
 			this.output.reply('Practice makes perfect.');

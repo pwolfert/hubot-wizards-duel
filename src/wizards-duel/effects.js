@@ -1,19 +1,15 @@
 import _      from 'underscore';
 import spells from './spells';
+import Player from './player';
 
 /**
  *
  * Effect configuration options: {
- *   negates: []     // Both effects are removed
- *   counteracts: [] // Both effects remain but are not applied
- *   voids: []       // This effect remains effective, but the ones listed are not applied
- *
- *
+ *   negates: []     // Upon adding this effect, if any effects in this list are found, this and that effect are removed
+ *   counteracts: [] // Listed effects are rendered ineffective
  *
  * }
  */
-
-
 var effects = {
 	'fire': {
 		noun: 'burning',
@@ -66,19 +62,19 @@ var effects = {
 	'large-nose': {
 		noun: 'enlarged nose',
 		negates: [ 'small-nose' ],
-		modify: function(manager, response, playerState, isDefense) {
-			var opponentState = manager.getPlayerState(playerState.opponent);
-			if (playerState.effects.contains('stench') || opponentState.effects.contains('stench')) {
+		modify: function(manager, playerState, isDefense) {
+			var opponent = new Player(manager, playerState.opponent);
+			if (playerState.effects.contains('stench') || opponent.state.effects.contains('stench')) {
 				// If the effect is on us this applies the effect again, which
 				//   effectively doubles it.  If the effect is on the opponent,
 				//   we want it now applied to us as well.
-				Effects.get('stench').modify(manager, repsonse, playerState, isDefense);
+				Effects.get('stench').modify(manager, playerState, isDefense);
 			}
 		},
 	},
 	'small-nose': {
 		negates: [ 'large-nose' ],
-		modify: function(manager, response, playerState, isDefense) {
+		modify: function(manager, playerState, isDefense) {
 			// Hmm, but how do we reverse another effect?  Do we need to
 			// have inverseModify callback?  Or do we just start listing
 			// out modifiers instead of having a modify function?
@@ -86,19 +82,19 @@ var effects = {
 	},
 	'confusion': {
 		negates: [ 'clarity' ],
-		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
+		beforeCast: function(manager, player, spell, onSelf) {
 			// 25% chance of casting a completely different spell
 			if (Math.random() < 0.25) {
 				var spellsArray = _.values(spells);
 				var randomSpell = _.sample(spellsArray);
 
 				// Narrate what just happened
-				response.send(
-					`@${modifiedPlayerState.name} attempts to utter the _${spell.incantation}_ ` +
+				manager.output.send(
+					`@${player.state.name} attempts to utter the _${spell.incantation}_ ` +
 					`but is confused and instead utters _${randomSpell.incantation}_.`
 				);
 
-				manager.attemptSpellCast(response, modifiedPlayerState, randomSpell, onSelf);
+				player.attemptSpellCast(randomSpell, onSelf);
 
 				return false; // Don't allow the spell to be cast
 			}
@@ -109,7 +105,7 @@ var effects = {
 	},
 	'intoxication': { // Spoonerisms
 		negates: [ 'clarity' ],
-		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
+		beforeCast: function(manager, player, spell, onSelf) {
 			var words = spell.incantation.split(' ');
 			// 60% chance of swapping word beginnings
 			if (words.length > 1 && Math.random() < 0.6) {
@@ -120,12 +116,19 @@ var effects = {
 	}
 };
 
-var Effect = function(name, effect) {
-	_.extend(this, effect);
-	this.effect = effect;
-	this.name = name;
+/**
+ * Class for effect instances that wraps some standard functionality around the
+ *   configuration.
+ */
+class Effect {
 
-	this.modify = function(manager, response, playerState, isDefense) {
+	constructor(name, effect) {
+		_.extend(this, effect);
+		this.effect = effect;
+		this.name = name;
+	}
+
+	modify(manager, playerState, isDefense) {
 		// Apply listed modifiers
 		if (this.effect.modifiers) {
 			for (var i = 0; i < this.effect.modifiers.length; i++) {
@@ -156,9 +159,9 @@ var Effect = function(name, effect) {
 		// Call modify function if it exists
 		if (this.effect.modify)
 			this.effect.modify(arguments);
-	};
+	}
 
-	this.inverseModify = function(manager, response, playerState, isDefense) {
+	inverseModify(manager, playerState, isDefense) {
 		// Inversly apply listed modifiers
 		if (this.effect.modifiers) {
 			for (var i = 0; i < this.effect.modifiers.length; i++) {
@@ -182,16 +185,18 @@ var Effect = function(name, effect) {
 				}
 			}
 		}
-	};
+	}
 
-	this.narrateDefenseModifiers = function(response, playerState) {
+	narrateDefenseModifiers(playerState) {
 
-	};
+	}
 
-	this.narrateOffenseModifiers = function(response, playerState) {
+	narrateOffenseModifiers(playerState) {
 		// 'Spellcasting chance is lowered'
-	};
-};
+	}
+
+}
+
 
 var Effects = {
 
