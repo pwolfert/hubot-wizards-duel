@@ -18,4 +18,4 @@ var Set = {
 
 };
 
-module.exports = Set;
+export default Set;

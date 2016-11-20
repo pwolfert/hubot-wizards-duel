@@ -1,4 +1,5 @@
-var _ = require('underscore');
+import _ from 'underscore';
+import Player from './player';
 
 var spells = [
 	{
@@ -51,23 +52,28 @@ var Spell = function(spell) {
 	_.extend(this, spell);
 	this.spell = spell;
 
-	this.cast = function(manager, response, playerState, onSelf) {
+	this.cast = function(manager, player, onSelf) {
 		var i;
+		var target = onSelf ? player : new Player(manager, player.state.opponent);
 
 		// Add effects as appropriate
 		if (this.effects) {
 			for (i = 0; i < this.effects.length; i++)
-				manager.addEffect(response, onSelf ? playerState : playerState.opponent, this.effects[i]);
+				target.addEffect(this.effects[i]);
 		}
 
 		// Remove effects as appropriate
 		if (this.removedEffects) {
-			var targetState = onSelf ? playerState : manager.getPlayerState(playerState.opponent);
+			var targetState = onSelf ? player : manager.getPlayerState(player.state.opponent);
 			for (i = 0; i < this.removedEffects.length; i++) {
 				if (targetState.effects.contains(this.removedEffects[i]))
-					manager.removeEffect(response, onSelf ? playerState : playerState.opponent, this.removedEffects[i]);
+					target.removeEffect(this.removedEffects[i]);
 			}
 		}
+
+		// If it's the opponent, we need to save
+		if (!onSelf)
+			target.save();
 
 		// Call the spell config's cast function if it exists
 		if (spell.cast)
@@ -86,9 +92,9 @@ var Spells = {
 		return _.findWhere(this.spells, { incantation: incantation });
 	},
 
-	each: _.partial(_.each, this.spells),
+	each: _.partial(_.each, spells),
 
 };
 
 
-module.exports = Spells;
+export default Spells;

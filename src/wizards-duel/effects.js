@@ -1,7 +1,42 @@
-var _      = require('underscore');
-var spells = require('./spells');
+import _      from 'underscore';
+import spells from './spells';
+import Player from './player';
 
+/**
+ *
+ * Effect configuration options: {
+ *   negates: []     // Upon adding this effect, if any effects in this list are found, this and that effect are removed
+ *   counteracts: [] // Listed effects are rendered ineffective
+ *
+ * }
+ */
 var effects = {
+	// This is just an example that includes all the possibilities
+	'example': {
+		noun: 'example',
+		adjective: 'exampled',
+		negates: [ 'fire' ],
+		counteracts: [ 'fog' ],
+		modifiers: [
+			[ 'turnSpellcasting', '+=', 0.1, 'makes it easier to think' ],
+			[ 'turnAccuracy',     '-=', 0.2, 'makes it difficult to see' ],
+			[ 'turnEvasion',      '+=', 0.1, 'makes it easier to move' ],
+			[ 'turnShield',       '+=', 0.1, 'provides a minor magical shield' ]
+		],
+		modify: function(manager, playerState, isDefense) {
+			playerState.modified = true;
+			playerState.modifiedIsDefense = isDefense;
+		},
+		// Called before a player attempts a spell cast
+		beforeCast: function(manager, player, spell, onSelf) {
+			return false;
+		},
+		// Called when a player is about to be hit by a spell
+		beforeHit: function(manager, player, spell, onSelf) {
+
+		}
+	},
+
 	'fire': {
 		noun: 'burning',
 		adjective: 'on fire',
@@ -53,39 +88,35 @@ var effects = {
 	'large-nose': {
 		noun: 'enlarged nose',
 		negates: [ 'small-nose' ],
-		modify: function(manager, response, playerState, isDefense) {
-			var opponentState = manager.getPlayerState(playerState.opponent);
-			if (playerState.effects.contains('stench') || opponentState.effects.contains('stench')) {
+		modify: function(manager, playerState, isDefense) {
+			var opponent = new Player(manager, playerState.opponent);
+			if (playerState.effects.contains('stench') || opponent.state.effects.contains('stench')) {
 				// If the effect is on us this applies the effect again, which
 				//   effectively doubles it.  If the effect is on the opponent,
 				//   we want it now applied to us as well.
-				Effects.get('stench').modify(manager, repsonse, playerState, isDefense);
+				Effects.get('stench').modify(manager, playerState, isDefense);
 			}
 		},
 	},
 	'small-nose': {
+		counteracts: [ 'stench', 'fragrance' ],
 		negates: [ 'large-nose' ],
-		modify: function(manager, response, playerState, isDefense) {
-			// Hmm, but how do we reverse another effect?  Do we need to
-			// have inverseModify callback?  Or do we just start listing
-			// out modifiers instead of having a modify function?
-		},
 	},
 	'confusion': {
 		negates: [ 'clarity' ],
-		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
+		beforeCast: function(manager, player, spell, onSelf) {
 			// 25% chance of casting a completely different spell
 			if (Math.random() < 0.25) {
 				var spellsArray = _.values(spells);
 				var randomSpell = _.sample(spellsArray);
 
 				// Narrate what just happened
-				response.send(
-					'@' + modifiedPlayerState.name + ' attempts to utter the _' + spell.incantation + '_ ' +
-					'but is confused and instead utters _' + randomSpell.incantation + '_.'
+				manager.output.send(
+					`@${player.state.name} attempts to utter the _${spell.incantation}_ ` +
+					`but is confused and instead utters _${randomSpell.incantation}_.`
 				);
 
-				manager.attemptSpellCast(response, modifiedPlayerState, randomSpell, onSelf);
+				player.attemptSpellCast(randomSpell, onSelf);
 
 				return false; // Don't allow the spell to be cast
 			}
@@ -94,25 +125,31 @@ var effects = {
 	'clarity': {
 		negates: [ 'confusion', 'intoxication' ],
 	},
-	'intoxication': {
+	'intoxication': { // Spoonerisms
 		negates: [ 'clarity' ],
-		beforeCast: function(manager, response, modifiedPlayerState, spell, onSelf) {
+		beforeCast: function(manager, player, spell, onSelf) {
 			var words = spell.incantation.split(' ');
 			// 60% chance of swapping word beginnings
 			if (words.length > 1 && Math.random() < 0.6) {
 				// Swap the beginning of the first two words
 				// Maybe figure out where the first vowel begins and select the beginning to that
 			}
-		}
-	}
+		},
+	},
 };
 
-var Effect = function(name, effect) {
-	_.extend(this, effect);
-	this.effect = effect;
-	this.name = name;
+/**
+ * Class for effect instances that wraps some standard functionality around the
+ *   configuration.
+ */
+class Effect {
 
-	this.modify = function(manager, response, playerState, isDefense) {
+	constructor(name, effect) {
+		this.effect = effect;
+		this.name = name;
+	}
+
+	modify(manager, playerState, isDefense) {
 		// Apply listed modifiers
 		if (this.effect.modifiers) {
 			for (var i = 0; i < this.effect.modifiers.length; i++) {
@@ -142,10 +179,10 @@ var Effect = function(name, effect) {
 
 		// Call modify function if it exists
 		if (this.effect.modify)
-			this.effect.modify(arguments);
-	};
+			this.effect.modify.apply(this, arguments);
+	}
 
-	this.inverseModify = function(manager, response, playerState, isDefense) {
+	inverseModify(manager, playerState, isDefense) {
 		// Inversly apply listed modifiers
 		if (this.effect.modifiers) {
 			for (var i = 0; i < this.effect.modifiers.length; i++) {
@@ -169,16 +206,54 @@ var Effect = function(name, effect) {
 				}
 			}
 		}
-	};
+	}
 
-	this.narrateDefenseModifiers = function(response, playerState) {
+	getDefenseModifiersNarration(playerState) {
+		const defenseModifiers = [ 'turnEvasion' ]
+	}
 
-	};
-
-	this.narrateOffenseModifiers = function(response, playerState) {
+	getOffenseModifiersNarration(playerState) {
 		// 'Spellcasting chance is lowered'
-	};
-};
+	}
+
+	counteracts(effectName) {
+		if (this.effect.counteracts)
+			return this.effect.counteracts.includes(effectName);
+		else
+			return false;
+	}
+
+	negates(effectName) {
+		if (this.effect.negates)
+			return this.effect.negates.includes(effectName);
+		else
+			return false;
+	}
+
+	/**
+	 * Called on every active effect before a player attempts a spell cast.
+	 *   If `false` is returned, the spell won't be cast.
+	 */
+	beforeCast(manager, player, spell, onSelf) {
+		if (this.effect.beforeCast)
+			return this.effect.beforeCast.apply(this, arguments);
+
+		return true;
+	}
+
+	/**
+	 * Called on every active effect when a player is about to be hit by a spell.
+	 *   If `false` is returned, the spell won't hit.
+	 */
+	beforeHit(manager, player, spell, onSelf) {
+		if (this.effect.beforeHit)
+			return this.effect.beforeHit.apply(this, arguments);
+
+		return true;
+	}
+
+}
+
 
 var Effects = {
 
@@ -186,11 +261,18 @@ var Effects = {
 		return new Effect(effectName, effect);
 	}),
 
-	get: function(effectName) {
+	get(effectName) {
 		// Create an object with callable functions
 		return this.effects[effectName];
 	},
 
+	/**
+	 * Only used for testing
+	 */
+	create(effectName, config) {
+		return new Effect(effectName, config);
+	}
+
 };
 
-module.exports = Effects;
+export default Effects;
