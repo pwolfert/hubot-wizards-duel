@@ -6,23 +6,24 @@ var expect = chai.expect;
 var helper = new Helper('../src/wizards-duel.js');
 
 
-describe('wizards-duel', function() {
+describe('wizards-duel', () => {
 	var message1 = 'I challenge @bob to a wizards duel!';
 	var message2 = 'I accept @alice\'s challenge';
 	var attackMessage1 = 'madefio!';
 
-	describe('Sending a Challenge', function() {
+	describe('Sending a Challenge', () => {
+		var room;
 
-		before(function() {
+		before(() => {
 			room = helper.createRoom();
 			room.user.say('alice', message1).then();
 		});
 
-		after(function() {
+		after(() => {
 			room.destroy();
 		});
 
-		it('responds to challenges - messages', function() {
+		it('responds to challenges - messages', () => {
 			var expectedResult = [
 				['alice', message1],
 				['hubot', [
@@ -34,7 +35,7 @@ describe('wizards-duel', function() {
 			expect(room.messages).to.deep.eql(expectedResult);
 		});
 
-		it('responds to challenges - stores status', function() {
+		it('responds to challenges - stores status', () => {
 			var duelKey = Manager.getDuelKey('alice', 'bob');
 
 			expect(room.robot.brain.data._private[duelKey]).to.eql(Manager.STATUS_CHALLENGE_SENT);
@@ -42,13 +43,14 @@ describe('wizards-duel', function() {
 
 	});
 
-	describe('Accepting a Challenge', function() {
+	describe('Accepting a Challenge', () => {
+		var room;
 		var turnData;
 
-		before(function(done) {
+		before((done) => {
 			room = helper.createRoom();
-			room.user.say('alice', message1).then(function() {
-				room.user.say('bob', message2).then(function() {
+			room.user.say('alice', message1).then(() => {
+				room.user.say('bob', message2).then(() => {
 					var turnKey = Manager.getTurnKey('alice', 'bob');
 					turnData = room.robot.brain.data._private[turnKey];
 					done();
@@ -56,15 +58,15 @@ describe('wizards-duel', function() {
 			});
 		});
 
-		after(function() {
+		after(() => {
 			room.destroy();
 		});
 
-		it('handles challenge accepting - stores turn info', function() {
+		it('handles challenge accepting - stores turn info', () => {
 			expect(turnData.attack).to.eql(true);
 		});
 
-		it('handles challenge accepting - messages', function() {
+		it('handles challenge accepting - messages', () => {
 			var startingPlayer = turnData.player;
 			var expectedLast2Messages = [
 				['bob', message2],
@@ -83,7 +85,7 @@ describe('wizards-duel', function() {
 			expect(last2Messages).to.deep.eql(expectedLast2Messages);
 		});
 
-		it('handles challenge accepting - stores status', function() {
+		it('handles challenge accepting - stores status', () => {
 			var duelKey = Manager.getDuelKey('alice', 'bob');
 
 			expect(room.robot.brain.data._private[duelKey]).to.eql(Manager.STATUS_DUELING);
