@@ -88,19 +88,21 @@ class Player {
 			if (succeeded) {
 				if (onSelf || this.spellHitTarget(spell)) {
 					spell.cast(this.manager, this, onSelf);
+
 					var narration = `@${this.state.name} casts ${spell.incantation}`;
 					if (!onSelf)
 						narration += ` on @${this.state.opponent}`;
 					narration += '.  ';
 					narration += spell.getNarration(onSelf ? this.state.name : this.state.opponent);
+
 					this.output.send(narration);
 				}
 				else {
 					this.output.send(`@${this.state.name} fails to hit his target.`);
 				}
 			}
-			else if (spell.failure)
-				spell.failure(this.manager, this, onSelf);
+			else if (spell.onFailure)
+				spell.onFailure(this.manager, this, onSelf);
 			else
 				this.output.send(`@${this.state.name} fails to cast ${spell.incantation}.`);
 		}

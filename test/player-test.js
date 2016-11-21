@@ -16,6 +16,10 @@ describe('Player', () => {
 			brain: {},
 			hear: () => {},
 		});
+		manager.startOutput({
+			send: function() {},
+			reply: function() {},
+		});
 
 		player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
 	});
@@ -118,7 +122,6 @@ describe('Player', () => {
 			incantation: 'bobbify',
 		});
 
-		manager.startOutput();
 		player.state.turnSpellcasting = 5;
 		player.attemptSpellCast(spell, true);
 
@@ -126,6 +129,41 @@ describe('Player', () => {
 			{
 				type: OutputBuffer.MESSAGE_SEND,
 				content: '@alice casts bobbify.  ',
+			}
+		]);
+	});
+
+	it('#attemptSpellCast narrates failure to cast', () => {
+		var spell = Spells.create({
+			incantation: 'bobbify',
+		});
+
+		player.state.turnSpellcasting = 0;
+		player.attemptSpellCast(spell, true);
+
+		expect(manager.output.messages).to.deep.eql([
+			{
+				type: OutputBuffer.MESSAGE_SEND,
+				content: '@alice fails to cast bobbify.',
+			}
+		]);
+
+		manager.output.flush();
+
+		var message = 'yo yo yo';
+		var spell2 = Spells.create({
+			incantation: 'bobbify',
+			onFailure: function(manager, player, onSelf) {
+				manager.output.send(message);
+			}
+		});
+
+		player.attemptSpellCast(spell2, true);
+
+		expect(manager.output.messages).to.deep.eql([
+			{
+				type: OutputBuffer.MESSAGE_SEND,
+				content: message,
 			}
 		]);
 	});

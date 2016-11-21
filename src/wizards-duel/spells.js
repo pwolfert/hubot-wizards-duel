@@ -78,6 +78,10 @@ class Spell {
 		return '';
 	}
 
+	get onFailure() {
+		return this.spell.onFailure;
+	}
+
 	get effects() {
 		if (this.spell.effects)
 			return this.spell.effects;
