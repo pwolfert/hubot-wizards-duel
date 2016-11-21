@@ -73,11 +73,11 @@ class Player {
 
 	attemptSpellCast(spell, onSelf) {
 		// Apply effects to playerState
-		var modifiedState = this.getModifiedState();
+		var affectedState = this.getAffectedState();
 
 		// Call any beforeCast functions from effects
 		var attemptCast = true;
-		for (let effectName of modifiedState.effects) {
+		for (let effectName of affectedState.effects) {
 			if (Effects.get(effectName).beforeCast(this.manager, this, spell, onSelf) === false)
 				attemptCast = false;
 		}
@@ -88,7 +88,7 @@ class Player {
 			if (succeeded) {
 				if (onSelf || this.spellHitTarget(spell)) {
 					spell.cast(this.manager, this, onSelf);
-					var narration = `${this.state.name} cast ${spell.incantation}`;
+					var narration = `@${this.state.name} casts ${spell.incantation}`;
 					if (!onSelf)
 						narration += ` on @${this.state.opponent}`;
 					narration += '.  ';
@@ -96,20 +96,20 @@ class Player {
 					this.output.send(narration);
 				}
 				else {
-					this.output.send(`@${playerState.name} fails to hit his target.`);
+					this.output.send(`@${this.state.name} fails to hit his target.`);
 				}
 			}
 			else if (spell.failure)
 				spell.failure(this.manager, this, onSelf);
 			else
-				this.output.send(`@${playerState.name} fails to cast ${spell.incantation}.`);
+				this.output.send(`@${this.state.name} fails to cast ${spell.incantation}.`);
 		}
 	}
 
 	spellHitTarget(spell) {
-		var playerState = this.getModifiedState();
+		var playerState = this.getAffectedState();
 		var opponent = new Player(this.manager, this.state.opponent);
-		var opponentState = opponent.getModifiedState(true);
+		var opponentState = opponent.getAffectedState(true);
 
 		var accuracy = clamp(playerState.turnAccuracy, MIN_ACCURACY, MAX_ACCURACY);
 		var evasion  = clamp(opponentState.turnEvasion,  MIN_EVASION, MAX_EVASION);
@@ -136,7 +136,7 @@ class Player {
 	 * Determines whether the spell is cast based off the player's state
 	 */
 	spellSucceeded(spell) {
-		return (Math.random() >= this.getModifiedState().turnSpellcasting);
+		return (Math.random() <= this.getAffectedState().turnSpellcasting);
 	}
 
 	/**
@@ -167,10 +167,10 @@ class Player {
 			SetFunctions.add(this.state.effects, effectName);
 
 			if (counteracted.length > 0)
-				this.manager.output.append(`The ${effectName} counteracted @${this.state.name}'s ${oxfordJoin(counteracted)}. `);
+				this.output.append(`The ${effectName} counteracted @${this.state.name}'s ${oxfordJoin(counteracted)}. `);
 		}
 		else
-			this.manager.output.append(`The ${effectName} has negated @${this.state.name}'s ${oxfordJoin(negated)}. `);
+			this.output.append(`The ${effectName} has negated @${this.state.name}'s ${oxfordJoin(negated)}. `);
 	}
 
 	/**
@@ -182,18 +182,18 @@ class Player {
 		SetFunctions.remove(this.state.effects, effectName);
 	}
 
-	getModifiedState(isDefense) {
+	getAffectedState(isDefense) {
 		if (isDefense) {
-			if (!this._defenseModifiedState)
-				this._defenseModifiedState = Player.getAffectedPlayerState(this.manager, this.state, isDefense);
+			if (!this._defenseAffectedState)
+				this._defenseAffectedState = Player.getAffectedPlayerState(this.manager, this.state, isDefense);
 
-			return this._defenseModifiedState;
+			return this._defenseAffectedState;
 		}
 		else {
-			if (!this._modifiedState)
-				this._modifiedState = Player.getAffectedPlayerState(this.manager, this.state, isDefense);
+			if (!this._affectedState)
+				this._affectedState = Player.getAffectedPlayerState(this.manager, this.state, isDefense);
 
-			return this._modifiedState;
+			return this._affectedState;
 		}
 	}
 

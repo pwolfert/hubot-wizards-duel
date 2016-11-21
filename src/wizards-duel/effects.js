@@ -290,7 +290,9 @@ var Effects = {
 	 * Only used for testing
 	 */
 	create(effectName, config) {
-		return new Effect(effectName, config);
+		var effect = new Effect(effectName, config);
+		this.effects[effectName] = effect;
+		return effect;
 	}
 
 };

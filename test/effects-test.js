@@ -39,9 +39,9 @@ describe('Effects', () => {
 
 		effect.modify(manager, playerState, false);
 
-		expect(playerState.turnSpellcasting).to.closeTo(0.6, 0.01);
-		expect(playerState.turnAccuracy).to.closeTo(0.3, 0.01);
-		expect(playerState.turnEvasion).to.closeTo(0.7, 0.01);
+		expect(playerState.turnSpellcasting).to.be.closeTo(0.6, 0.01);
+		expect(playerState.turnAccuracy).to.be.closeTo(0.3, 0.01);
+		expect(playerState.turnEvasion).to.be.closeTo(0.7, 0.01);
 		expect(playerState.modified).to.be.true;
 		expect(playerState.modifiedIsDefense).to.be.false;
 	});
