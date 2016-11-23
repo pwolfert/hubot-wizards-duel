@@ -16,7 +16,9 @@ var effectConfigs = {
 		noun: 'example',
 		adjective: 'exampled',
 		negates: [ 'fire' ],
+		removes: [ 'sunlight' ],
 		counteracts: [ 'fog' ],
+		counteredBy: [], // I haven't yet decided if I want this, but it would make it easier to write configs some cases even if it's redundant
 		modifiers: [
 			[ 'turnSpellcasting', '+=', 0.1, 'makes it easier to think' ],
 			[ 'turnAccuracy',     '-=', 0.2, 'makes it difficult to see' ],
@@ -140,6 +142,19 @@ var effectConfigs = {
 			manager.output.append(`The ${spell.projectileDescription} passes straight through @${player.state.name} with no effect`);
 			return false;
 		}
+	},
+	'merlins-beard': {
+		// added wisdom, destroyed by fire and hairloss
+	},
+
+	/**
+	 * Global effects (haven't decided if they'll be a thing yet)
+	 */
+	'flood-arena': {
+		global: true,
+	},
+	'rainstorm-arena': {
+		global: true,
 	}
 };
 
@@ -157,6 +172,12 @@ class Effect {
 	get negatedEffects() {
 		if (this.effect.negates)
 			return this.effect.negates;
+		return [];
+	}
+
+	get removedEffects() {
+		if (this.effect.removes)
+			return this.effect.removes;
 		return [];
 	}
 

@@ -142,7 +142,7 @@ class Player {
 	}
 
 	/**
-	 * Adds an effect to the player and negates opposite effects
+	 * Adds an effect to the player, negates opposite effects, and removes removed effects
 	 *
 	 * @param {Object} response - hubot response object
 	 * @param {(Object|string)} playerState - either the playerState object or player name
@@ -158,6 +158,15 @@ class Player {
 			}
 		}
 
+		var removed = [];
+		var removes = Effects.get(effectName).removedEffects;
+		for (let removedEffectName of removes) {
+			if (SetFunctions.includes(this.state.effects, removedEffectName)) {
+				SetFunctions.remove(this.state.effects, removedEffectName);
+				removed.push(removedEffectName);
+			}
+		}
+
 		var counteracted = [];
 		var counteracts = Effects.get(effectName).counteractedEffects;
 		for (let counteractedEffectName of counteracts) {
@@ -167,7 +176,8 @@ class Player {
 
 		if (!negated.length) {
 			SetFunctions.add(this.state.effects, effectName);
-
+			if (removed.length > 0)
+				this.output.append(`The ${effectName} removed @${this.state.name}'s ${oxfordJoin(removed)}. `);
 			if (counteracted.length > 0)
 				this.output.append(`The ${effectName} counteracted @${this.state.name}'s ${oxfordJoin(counteracted)}. `);
 		}
