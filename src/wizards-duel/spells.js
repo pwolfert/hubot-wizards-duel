@@ -46,6 +46,13 @@ var spellConfigs = [
 		removedEffects: [ 'frog-vomitting' ],
 		baseSuccessRate: 0.25,
 	},
+	{
+		incantation: 'CURE STOMACH AILMENTS',
+		description: 'cures stomach ailments',
+		narration: '@target\'s stomach ailments have been cured.',
+		removedEffects: [ 'frog-vomitting', 'bowel-stench', 'bowel-slickery' ],
+		baseSuccessRate: 0.75,
+	}
 ];
 
 /**
