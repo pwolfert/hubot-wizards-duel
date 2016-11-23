@@ -44,6 +44,7 @@ var spellConfigs = [
 		description: 'cures illnesses',
 		narration: '@target\'s illnesses have been cured.',
 		removedEffects: [ 'frog-vomitting' ],
+		baseSuccessRate: 0.25,
 	},
 ];
 
@@ -92,6 +93,12 @@ class Spell {
 		if (this.spell.removedEffects)
 			return this.spell.removedEffects;
 		return [];
+	}
+
+	get baseSuccessRate() {
+		if (this.spell.baseSuccessRate)
+			return this.spell.baseSuccessRate;
+		return 1;
 	}
 
 	cast(manager, player, onSelf) {

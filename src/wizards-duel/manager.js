@@ -90,6 +90,12 @@ class Manager {
 				player.getEffectList().join('\n')
 			);
 		});
+
+		// Duelbot, what's your story? --I was made to serve at the arena
+		// What's the arena? --a place built by my master for wizards to duel
+		// Who built the arena? --the wizard who built me
+		// Who built you? --the wizard who built the arena
+		// Who is your master? --the wizard who built this
 	}
 
 	hear(regex, callback) {

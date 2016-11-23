@@ -25,10 +25,10 @@ describe('Player', () => {
 	});
 
 	it('#resetTurnVars works', () => {
-		player.state.spellcasting = 1;
-		player.state.accuracy = 0.5;
-		player.state.evasion = 0.5;
-		player.state.pain = 0.5;
+		player.state.spellcasting = 100;
+		player.state.accuracy = 50;
+		player.state.evasion = 50;
+		player.state.pain = 50;
 
 		player.resetTurnVars();
 
@@ -43,17 +43,17 @@ describe('Player', () => {
 		var effectName = 'example-modified-state';
 		Effects.create(effectName, {
 			modifiers: [
-				[ 'turnAccuracy', '-=', 0.2, 'makes it difficult to see' ],
+				[ 'turnAccuracy', '-=', 20, 'makes it difficult to see' ],
 			],
 		});
 
-		player.state.accuracy = 0.5;
+		player.state.accuracy = 50;
 		player.resetTurnVars();
 		player.state.effects = [ effectName ];
 		var affectedState = Player.getAffectedPlayerState(manager, player.state, false);
-		expect(affectedState.turnAccuracy).to.be.closeTo(0.3, 0.01);
+		expect(affectedState.turnAccuracy).to.be.closeTo(30, 0.01);
 		affectedState = player.getAffectedState();
-		expect(affectedState.turnAccuracy).to.be.closeTo(0.3, 0.01);
+		expect(affectedState.turnAccuracy).to.be.closeTo(30, 0.01);
 	});
 
 	it('#getActiveEffects takes into account counteractions', () => {
@@ -73,7 +73,7 @@ describe('Player', () => {
 	it('#spellSucceeded correctly calculates cast success and failure', () => {
 		var spell = Spells.create({});
 		expect(player.spellSucceeded(spell)).to.be.true;
-		player.state.turnSpellcasting = -0.01;
+		player.state.turnSpellcasting = -1;
 		player._affectedState = Player.getAffectedPlayerState(manager, player.state, false);
 		expect(player.spellSucceeded(spell)).to.be.false;
 	});
@@ -84,9 +84,9 @@ describe('Player', () => {
 			return opponentState;
 		};
 		opponentState.turnEvasion = 0;
-		player.state.turnAccuracy = 1;
+		player.state.turnAccuracy = 100;
 		expect(player.spellHitTarget(Spells.create({}))).to.be.true;
-		opponentState.turnEvasion = 1;
+		opponentState.turnEvasion = 100;
 		expect(player.spellHitTarget(Spells.create({}))).to.be.false;
 
 		// Test for effects that don't allow being hit
@@ -122,7 +122,7 @@ describe('Player', () => {
 			incantation: 'bobbify',
 		});
 
-		player.state.turnSpellcasting = 5;
+		player.state.turnSpellcasting = 500;
 		player.attemptSpellCast(spell, true);
 
 		expect(manager.output.messages).to.deep.eql([

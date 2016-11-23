@@ -20,10 +20,10 @@ var effectConfigs = {
 		counteracts: [ 'fog' ],
 		counteredBy: [], // I haven't yet decided if I want this, but it would make it easier to write configs some cases even if it's redundant
 		modifiers: [
-			[ 'turnSpellcasting', '+=', 0.1, 'makes it easier to think' ],
-			[ 'turnAccuracy',     '-=', 0.2, 'makes it difficult to see' ],
-			[ 'turnEvasion',      '+=', 0.1, 'makes it easier to move' ],
-			[ 'turnShield',       '+=', 0.1, 'provides a minor magical shield' ]
+			[ 'turnSpellcasting', '+=', 10, 'makes it easier to think' ],
+			[ 'turnAccuracy',     '-=', 20, 'makes it difficult to see' ],
+			[ 'turnEvasion',      '+=', 10, 'makes it easier to move' ],
+			[ 'turnShield',       '+=', 10, 'provides a minor magical shield' ]
 		],
 		modify: function(manager, playerState, isDefense) {
 			playerState.modified = true;
