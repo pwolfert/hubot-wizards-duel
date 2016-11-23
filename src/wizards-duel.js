@@ -10,8 +10,24 @@
 
 import Manager from './wizards-duel/manager';
 
+class HubotWrapper {
+
+	constructor(robot) {
+		this.robot
+		this.output = {
+
+		}
+		this.manager = new Manager()
+	}
+
+	get output() {
+
+	}
+
+}
+
 export default function(robot) {
 
-	var manager = new Manager(robot);
+	var manager = new Manager();
 
 };
