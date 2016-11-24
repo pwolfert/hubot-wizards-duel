@@ -200,4 +200,11 @@ describe('Player', () => {
 		expect(player.state.effects).to.deep.eql([ 'stench', 'example-fire' ]);
 	});
 
+	it('#removeEffect removes effects', () => {
+		player.state.effects = [ 'fog', 'water' ];
+		player.removeEffect('fog');
+
+		expect(player.state.effects).to.deep.eql([ 'water' ]);
+	});
+
 });

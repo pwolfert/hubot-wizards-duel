@@ -8,8 +8,8 @@ const MIN_ACCURACY =  5;
 const MAX_ACCURACY = 95;
 const MIN_EVASION  =  5;
 const MAX_EVASION  = 95;
-const MIN_PAIN = 0;
-const MAX_PAIN = 100;
+const MIN_PAIN     = 0;
+const MAX_PAIN     = 100;
 
 class Player {
 
