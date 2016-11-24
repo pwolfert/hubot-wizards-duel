@@ -168,4 +168,36 @@ describe('Player', () => {
 		]);
 	});
 
+	it('#attemptSpellCast calls spell\'s #cast function', () => {
+		var cast = false;
+		var spell = Spells.create({
+			incantation: 'bobbify',
+			cast: function() {
+				cast = true;
+			}
+		});
+
+		player.state.turnSpellcasting = 500;
+		player.attemptSpellCast(spell, true);
+
+		expect(cast).to.be.true;
+	});
+
+	it('#addEffect adds and removes effects as appropriate', () => {
+		Effects.create('example-fire', {
+			removes: [ 'fog' ],
+			negates: [ 'water' ],
+		});
+
+		player.state.effects = [ 'fog', 'water' ];
+		player.addEffect('example-fire');
+
+		expect(player.state.effects).to.deep.eql([]);
+
+		player.state.effects = [ 'fog', 'stench' ];
+		player.addEffect('example-fire');
+
+		expect(player.state.effects).to.deep.eql([ 'stench', 'example-fire' ]);
+	});
+
 });
