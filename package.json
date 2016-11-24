@@ -20,6 +20,7 @@
     "clamp": "^1.0.1",
     "grunt-babel": "^6.0.0",
     "grunt-cli": "^0.1.13",
+    "grunt-contrib-copy": "^1.0.0",
     "matchdep": "~0.3.0",
     "oxford-join": "^0.1.0",
     "underscore": "^1.8.3"

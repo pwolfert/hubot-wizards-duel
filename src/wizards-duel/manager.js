@@ -13,6 +13,8 @@ const STATUS_NOT_DUELING = 0;
 const STATUS_CHALLENGE_SENT = 1;
 const STATUS_DUELING = 2;
 
+const NUM_FAILURES_TO_LOSE = 5;
+
 /**
  * Manager manages the games state and everything
  */
@@ -299,7 +301,19 @@ class Manager {
 					this.startAttackTurn(player.state.name, challenger, challengee);
 				}
 
-				player.attemptSpellCast(spell, onSelf);
+				var successfullyCast = player.attemptSpellCast(spell, onSelf);
+				if (successfullyCast)
+					player.state.numFailures = 0;
+				else
+					player.state.numFailures++;
+
+				player.save();
+
+				if (player.state.numFailures >= NUM_FAILURES_TO_LOSE) {
+					this.duelEnded(challenger, challengee, {
+						won: player.state.opponent,
+					});
+				}
 			}
 			else {
 				this.output.reply('It is not your turn.');

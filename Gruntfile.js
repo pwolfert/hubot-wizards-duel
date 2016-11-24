@@ -31,11 +31,22 @@ module.exports = function (grunt) {
 			},
 			build: {
 				files: [{
-					"expand": true,
-					"cwd": "src/",
-					"src": ["**/*.js"],
-					"dest": "build/",
-					"ext": ".js"
+					'expand': true,
+					'cwd': 'src/',
+					'src': ['**/*.js'],
+					'dest': 'build/',
+					'ext': '.js'
+				}]
+			}
+		},
+		copy: {
+			json: {
+				files: [{
+					'expand': true,
+					'cwd': 'src/',
+					'src': ['**/*.json'],
+					'dest': 'build/',
+					'ext': '.json'
 				}]
 			}
 		}
@@ -45,7 +56,7 @@ module.exports = function (grunt) {
 	require('matchdep').filter(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 	require('matchdep').filterDev(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 
-	grunt.registerTask('build', ['babel:build']);
+	grunt.registerTask('build', ['babel:build', 'copy:json']);
 	grunt.registerTask('test', ['mochaTest']);
 	grunt.registerTask('lint', ['eslint']);
 	grunt.registerTask('default', ['eslint', 'test']);

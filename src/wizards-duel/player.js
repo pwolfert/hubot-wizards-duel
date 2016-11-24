@@ -45,6 +45,7 @@ class Player {
 			isChallenger: isChallenger,
 			opponent: opponent,
 			effects: [],
+			numFailures: 0,
 			spellcasting: 100,
 			accuracy: 95,
 			evasion: 0,
@@ -111,7 +112,11 @@ class Player {
 				spell.onFailure(this.manager, this, onSelf);
 			else
 				this.output.send(`@${this.state.name} fails to cast ${spell.incantation}.`);
+
+			return succeeded;
 		}
+
+		return attemptCast;
 	}
 
 	spellHitTarget(spell) {
