@@ -1,5 +1,7 @@
 import _ from 'underscore';
 import Player from './player';
+import friendlyBards   from './data/friendly-bards.json';
+import unfriendlyBards from './data/unfriendly-bards.json';
 
 var spellConfigs = [
 	{
@@ -44,6 +46,57 @@ var spellConfigs = [
 		description: 'cures illnesses',
 		narration: '@target\'s illnesses have been cured.',
 		removedEffects: [ 'frog-vomitting' ],
+		baseSuccessRate: 0.25,
+	},
+	{
+		incantation: 'TODO: CURE STOMACH AILMENTS',
+		description: 'cures stomach ailments',
+		narration: '@target\'s stomach ailments have been cured.',
+		removedEffects: [ 'frog-vomitting', 'bowel-stench', 'bowel-slickery' ],
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'TODO: FRIENDLY BARD',
+		description: 'conjures a friendly bard',
+		narration: function(target) {
+			var bardName = _.sample(friendlyBards);
+			return `${bardName} is summoned to play inspiring music.`;
+		},
+		effects: [ 'friendly-bard' ],
+	},
+	{
+		incantation: 'TODO: UNFRIENDLY BARD',
+		description: 'conjures an ufriendly bard',
+		narration: function(target) {
+			var bardName = _.sample(unfriendlyBards);
+			return `${bardName} is summoned to play demoralizing music.`;
+		},
+		effects: [ 'unfriendly-bard' ],
+	},
+	{
+		incantation: 'TODO: BANISH FRIENDLIES',
+		description: 'banishes friendlies',
+	},
+	{
+		incantation: 'TODO: CURE INFLAMMATION',
+		description: 'cures inflammation',
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'TODO: FIREBALL',
+		description: 'has a chance to catch things on fire',
+		onHitTarget: function(manager, target, onSelf) {
+			var flammableEffects = _.intersection(target.state.effects, Effects.veryFlammableEffectNames);
+			// Calculate chance to catch on fire (aided by presence of very flammable effects)
+			var toCatchOnFire = 0.5 + 0.25 * flammableEffects.length;
+			if (Math.random() <= toCatchOnFire) {
+				target.addEffect('fire');
+				manager.output.append(`@${target} has caught fire.`);
+			}
+			else {
+				manager.output.append(`@${target} does not catch fire.`);
+			}
+		}
 	},
 ];
 
@@ -94,6 +147,12 @@ class Spell {
 		return [];
 	}
 
+	get baseSuccessRate() {
+		if (this.spell.baseSuccessRate)
+			return this.spell.baseSuccessRate;
+		return 1;
+	}
+
 	cast(manager, player, onSelf) {
 		var i;
 		var target = onSelf ? player : new Player(manager, player.state.opponent);
@@ -117,8 +176,16 @@ class Spell {
 			this.spell.cast.apply(this, arguments);
 	}
 
+	onHitTarget(manager, player, onSelf) {
+		if (this.spell.onHitTarget)
+			this.spell.onHitTarget.apply(this, arguments);
+	}
+
 	getNarration(target) {
-		return this.narration.replace('@target', '@' + target);
+		if (typeof this.narration === 'function')
+			return this.narration.call(this, target);
+		else
+			return this.narration.replace('@target', '@' + target);
 	}
 
 }

@@ -28,15 +28,15 @@ const Language = {
 	},
 
 	getSeverity(value) {
-		if (value <= 0.05)
+		if (value <= 5)
 			return Severity.TRIVIAL;
-		if (value <= 0.15)
+		if (value <= 15)
 			return Severity.SLIGHT;
-		if (value <= 0.25)
+		if (value <= 25)
 			return Severity.MODEST;
-		if (value <= 0.35)
+		if (value <= 35)
 			return Severity.MODERATE;
-		if (value <= 0.50)
+		if (value <= 50)
 			return Severity.SEVERE;
 		return Severity.SERIOUS;
 	},
@@ -46,13 +46,13 @@ const Language = {
 	},
 
 	getDifficulty(successProbability) {
-		if (value >= 1)
+		if (value >= 100)
 			return Difficulty.EASY;
-		if (value >= 0.75)
+		if (value >= 75)
 			return Difficulty.MODERATE;
-		if (value >= 0.50)
+		if (value >= 50)
 			return Difficulty.DIFFICULT;
-		if (value >= 0.25)
+		if (value >= 25)
 			return Difficulty.VERY_DIFFICULT;
 		return Difficulty.EXTREMELY_DIFFICULT;
 	}

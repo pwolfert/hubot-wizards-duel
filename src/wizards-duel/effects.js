@@ -20,10 +20,10 @@ var effectConfigs = {
 		counteracts: [ 'fog' ],
 		counteredBy: [], // I haven't yet decided if I want this, but it would make it easier to write configs some cases even if it's redundant
 		modifiers: [
-			[ 'turnSpellcasting', '+=', 0.1, 'makes it easier to think' ],
-			[ 'turnAccuracy',     '-=', 0.2, 'makes it difficult to see' ],
-			[ 'turnEvasion',      '+=', 0.1, 'makes it easier to move' ],
-			[ 'turnShield',       '+=', 0.1, 'provides a minor magical shield' ]
+			[ 'turnSpellcasting', '+=', 10, 'makes it easier to think' ],
+			[ 'turnAccuracy',     '-=', 20, 'makes it difficult to see' ],
+			[ 'turnEvasion',      '+=', 10, 'makes it easier to move' ],
+			[ 'turnShield',       '+=', 10, 'provides a minor magical shield' ]
 		],
 		modify: function(manager, playerState, isDefense) {
 			playerState.modified = true;
@@ -39,11 +39,14 @@ var effectConfigs = {
 		}
 	},
 
+	// ELEMENTAL
+	// -------------------------------------------------------------------------
 	'fire': {
 		noun: 'burning',
 		adjective: 'on fire',
 		negates: [ 'fog', 'cold', 'frost' ],
 	},
+	'burned': {},
 	'water': {
 		adjective: 'soaking wet',
 		negates: [ 'fire' ],
@@ -54,33 +57,34 @@ var effectConfigs = {
 	'frost': {
 		adjective: 'frozen',
 	},
-	'levitation': {
-		adjective: 'floating in the air',
-	},
 	'entangling-roots': {
 		counteracts: [ 'levitation' ],
 	},
-	'frog-vomitting': {
-		noun: 'vomitting up of frogs',
-		adjective: 'vomitting frogs',
-		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'makes it difficult to speak' ],
-		],
-	},
 	'fog': {
 		modifiers: [
-			[ 'turnAccuracy', '*=', 0.75, 'makes it difficult to see' ],
-			[ 'turnEvasion',  '*=', 1.25, 'makes it difficult to see' ],
+			[ 'turnAccuracy', '-=', 30, 'makes it difficult to see' ],
+			[ 'turnEvasion',  '-=', 15, 'makes it difficult to see' ],
 		],
 	},
 	'sunlight': {
 		negates: [ 'fog' ],
 	},
+
+
+	// BODY
+	// -------------------------------------------------------------------------
+	'frog-vomitting': {
+		noun: 'vomitting up of frogs',
+		adjective: 'vomitting frogs',
+		modifiers: [
+			[ 'turnSpellcasting', '-=', 20, 'makes it difficult to speak' ],
+		],
+	},
 	'stench': {
 		noun: 'stench',
 		counteracts: [ 'fragrance' ],
 		modifiers: [
-			[ 'turnSpellcasting', '*=', 0.75, 'makes it difficult to concentrate' ],
+			[ 'turnSpellcasting', '-=', 10, 'makes it difficult to concentrate' ],
 		],
 	},
 	'fragrance': {
@@ -101,9 +105,25 @@ var effectConfigs = {
 		},
 	},
 	'small-nose': {
-		counteracts: [ 'stench', 'fragrance' ],
+		counteracts: [ 'stench', 'fragrance', 'bowel-stench' ],
 		negates: [ 'large-nose' ],
 	},
+	'merlins-beard': {
+		// added wisdom, destroyed by fire and hairloss
+	},
+	'bowel-slickery': {},
+	'bowel-stench': {},
+	'small-feet': {},
+	'tiny-feet': {},
+	'swollen-tongue': {},
+	'swollen-eyes': {},
+	'wings': {},
+	'bat-ears': {},
+	'noodle-arms': {},
+
+
+	// MENTAL
+	// -------------------------------------------------------------------------
 	'confusion': {
 		negates: [ 'clarity' ],
 		beforeCast: function(manager, player, spell, onSelf) {
@@ -137,14 +157,42 @@ var effectConfigs = {
 			}
 		},
 	},
+	'marionette': {},
+
+
+	// CREATURE
+	// -------------------------------------------------------------------------
+	'brain-parasite': {},
+	'friendly-bard': {
+		modifiers: [ [ 'turnPain', '-=', 10, 'makes the pain of this world a little easier to bear' ] ],
+	},
+	'unfriendly-bard': {
+		modifiers: [ [ 'turnPain', '+=', 10, 'is painful to hear' ] ],
+	},
+
+
+	// PROTECTION / BUFFS
+	// ---------------------------------------------------------------------------
+	'magic-shield-10': {
+		modifiers: [ [ 'turnShield', '+=', 10, 'provides a minor magical shield' ] ],
+	},
+	'magic-shield-20': {
+		modifiers: [ [ 'turnShield', '+=', 20, 'provides a decent magical shield' ] ],
+		removes: [ 'magic-shield-10' ],
+	},
+	'magic-shield-30': {
+		modifiers: [ [ 'turnShield', '+=', 30, 'provides a good magical shield' ] ],
+		removes: [ 'magic-shield-20' ],
+	},
+	'levitation': {
+		adjective: 'floating in the air',
+		counteracts: [ 'entangling-roots' ],
+	},
 	'spectral': {
 		beforeHit: function(manager, player, spell, onSelf) {
 			manager.output.append(`The ${spell.projectileDescription} passes straight through @${player.state.name} with no effect`);
 			return false;
 		}
-	},
-	'merlins-beard': {
-		// added wisdom, destroyed by fire and hairloss
 	},
 
 	/**
@@ -314,7 +362,11 @@ var Effects = {
 		var effect = new Effect(effectName, config);
 		this.effects[effectName] = effect;
 		return effect;
-	}
+	},
+
+	veryFlammableEffectNames: [
+		'wings', 'merlins-beard'
+	],
 
 };
 

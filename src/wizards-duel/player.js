@@ -4,10 +4,12 @@ import clamp from 'clamp';
 import Effects from './effects';
 import SetFunctions from './set';
 
-const MIN_ACCURACY = 0.05;
-const MAX_ACCURACY = 0.95;
-const MIN_EVASION = 0.05;
-const MAX_EVASION = 0.95;
+const MIN_ACCURACY =  5;
+const MAX_ACCURACY = 95;
+const MIN_EVASION  =  5;
+const MAX_EVASION  = 95;
+const MIN_PAIN     = 0;
+const MAX_PAIN     = 100;
 
 class Player {
 
@@ -43,8 +45,8 @@ class Player {
 			isChallenger: isChallenger,
 			opponent: opponent,
 			effects: [],
-			spellcasting: 1,
-			accuracy: 1,
+			spellcasting: 100,
+			accuracy: 95,
 			evasion: 0,
 			pain: 0,
 		};
@@ -87,15 +89,19 @@ class Player {
 			var succeeded = this.spellSucceeded(spell);
 			if (succeeded) {
 				if (onSelf || this.spellHitTarget(spell)) {
+					this.output.startSend();
+
 					spell.cast(this.manager, this, onSelf);
 
-					var narration = `@${this.state.name} casts ${spell.incantation}`;
+					this.output.append(`@${this.state.name} casts ${spell.incantation}`);
 					if (!onSelf)
-						narration += ` on @${this.state.opponent}`;
-					narration += '.  ';
-					narration += spell.getNarration(onSelf ? this.state.name : this.state.opponent);
+						this.output.append(` on @${this.state.opponent}`);
+					this.output.append('.  ');
+					this.output.append(spell.getNarration(onSelf ? this.state.name : this.state.opponent));
 
-					this.output.send(narration);
+					spell.onHitTarget(this.manager, onSelf ? this : new Player(this.manager, this.state.opponent), onSelf);
+
+					this.output.endSend();
 				}
 				else {
 					this.output.send(`@${this.state.name} fails to hit his target.`);
@@ -113,8 +119,8 @@ class Player {
 		var opponent = new Player(this.manager, this.state.opponent);
 		var opponentState = opponent.getAffectedState(true);
 
-		var accuracy = clamp(playerState.turnAccuracy, MIN_ACCURACY, MAX_ACCURACY);
-		var evasion  = clamp(opponentState.turnEvasion,  MIN_EVASION, MAX_EVASION);
+		var accuracy = clamp(playerState.turnAccuracy, MIN_ACCURACY, MAX_ACCURACY) - clamp(playerState.turnPain, MIN_PAIN, MAX_PAIN);
+		var evasion  = clamp(opponentState.turnEvasion, MIN_EVASION, MAX_EVASION) - clamp(opponentState.turnPain, MIN_PAIN, MAX_PAIN);
 
 		var chanceToHit = ((accuracy - evasion) / accuracy);
 		if (chanceToHit <= 0)
@@ -138,7 +144,10 @@ class Player {
 	 * Determines whether the spell is cast based off the player's state
 	 */
 	spellSucceeded(spell) {
-		return (Math.random() <= this.getAffectedState().turnSpellcasting);
+		var playerState = this.getAffectedState();
+		var pain = clamp(playerState.turnPain, MIN_PAIN, MAX_PAIN);
+		var toCast = (playerState.turnSpellcasting - pain) * spell.baseSuccessRate;
+		return (Math.random() * 100 <= toCast);
 	}
 
 	/**
