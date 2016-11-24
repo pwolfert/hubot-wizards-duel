@@ -62,8 +62,8 @@ var effectConfigs = {
 	},
 	'fog': {
 		modifiers: [
-			[ 'turnAccuracy', '*=', 0.75, 'makes it difficult to see' ],
-			[ 'turnEvasion',  '*=', 1.25, 'makes it difficult to see' ],
+			[ 'turnAccuracy', '-=', 30, 'makes it difficult to see' ],
+			[ 'turnEvasion',  '-=', 15, 'makes it difficult to see' ],
 		],
 	},
 	'sunlight': {
@@ -163,8 +163,12 @@ var effectConfigs = {
 	// CREATURE
 	// -------------------------------------------------------------------------
 	'brain-parasite': {},
-	'friendly-bard': {},
-	'unfriendly-bard': {},
+	'friendly-bard': {
+		modifiers: [ [ 'turnPain', '-=', 10, 'makes the pain of this world a little easier to bear' ] ],
+	},
+	'unfriendly-bard': {
+		modifiers: [ [ 'turnPain', '+=', 10, 'is painful to hear' ] ],
+	},
 
 
 	// PROTECTION / BUFFS
@@ -358,7 +362,11 @@ var Effects = {
 		var effect = new Effect(effectName, config);
 		this.effects[effectName] = effect;
 		return effect;
-	}
+	},
+
+	veryFlammableEffectNames: [
+		'wings', 'merlins-beard'
+	],
 
 };
 
