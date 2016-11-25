@@ -49,7 +49,17 @@ module.exports = function (grunt) {
 					'ext': '.json'
 				}]
 			}
-		}
+		},
+		browserify: {
+			tools: {
+				options: {
+					transform: ['babelify']
+				},
+				files: {
+					"./tools/build/tools.js": ["./tools/src/tools.js"]
+				}
+			}
+		},
 	});
 
 	// load all grunt tasks
@@ -59,5 +69,6 @@ module.exports = function (grunt) {
 	grunt.registerTask('build', ['babel:build', 'copy:json']);
 	grunt.registerTask('test', ['mochaTest']);
 	grunt.registerTask('lint', ['eslint']);
+	grunt.registerTask('tools', ['browserify:tools']);
 	grunt.registerTask('default', ['eslint', 'test']);
 };

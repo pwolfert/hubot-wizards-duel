@@ -30,9 +30,11 @@
   },
   "devDependencies": {
     "babel-register": "^6.18.0",
+    "babelify": "^7.3.0",
     "chai": "^2.1.1",
     "coffee-script": "1.6.3",
     "grunt": "^0.4.5",
+    "grunt-browserify": "^5.0.0",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-eslint": "^19.0.0",
     "grunt-mocha-test": "~0.12.7",

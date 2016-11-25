@@ -48,7 +48,7 @@ class Player {
 			numFailures: 0,
 			spellcasting: 100,
 			accuracy: 95,
-			evasion: 0,
+			evasion: 5,
 			pain: 0,
 		};
 
@@ -163,40 +163,7 @@ class Player {
 	 * @param {string} effectName - the effects array key for the effect
 	 */
 	addEffect(effectName) {
-		var negated = [];
-		var negates = Effects.get(effectName).negatedEffects;
-		for (let negatedEffectName of negates) {
-			if (SetFunctions.includes(this.state.effects, negatedEffectName)) {
-				SetFunctions.remove(this.state.effects, negatedEffectName);
-				negated.push(negatedEffectName);
-			}
-		}
-
-		var removed = [];
-		var removes = Effects.get(effectName).removedEffects;
-		for (let removedEffectName of removes) {
-			if (SetFunctions.includes(this.state.effects, removedEffectName)) {
-				SetFunctions.remove(this.state.effects, removedEffectName);
-				removed.push(removedEffectName);
-			}
-		}
-
-		var counteracted = [];
-		var counteracts = Effects.get(effectName).counteractedEffects;
-		for (let counteractedEffectName of counteracts) {
-			if (SetFunctions.includes(this.state.effects, counteractedEffectName))
-				counteracted.push(counteractedEffectName);
-		}
-
-		if (!negated.length) {
-			SetFunctions.add(this.state.effects, effectName);
-			if (removed.length > 0)
-				this.output.append(`The ${effectName} removed @${this.state.name}'s ${oxfordJoin(removed)}. `);
-			if (counteracted.length > 0)
-				this.output.append(`The ${effectName} counteracted @${this.state.name}'s ${oxfordJoin(counteracted)}. `);
-		}
-		else
-			this.output.append(`The ${effectName} has negated @${this.state.name}'s ${oxfordJoin(negated)}. `);
+		Effects.addEffect(this.state.effects, effectName, this.output, this.state.name);
 	}
 
 	/**
@@ -205,7 +172,7 @@ class Player {
 	 * @param {string} effectName - the effects array key for the effect
 	 */
 	removeEffect(effectName) {
-		SetFunctions.remove(this.state.effects, effectName);
+		Effects.removeEffect(this.state.effects, effectName);
 	}
 
 	getAffectedState(isDefense) {

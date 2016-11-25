@@ -10,6 +10,7 @@ const Severity = {
 
 const Difficulty = {
 	EASY:                { adjective: 'simple' },
+	NORMAL:              { adjective: 'slightly challenging' },
 	MODERATE:            { adjective: 'challenging' },
 	DIFFICULT:           { adjective: 'difficult' },
 	VERY_DIFFICULT:      { adjective: 'very difficult' },
@@ -49,10 +50,12 @@ const Language = {
 		if (value >= 100)
 			return Difficulty.EASY;
 		if (value >= 75)
-			return Difficulty.MODERATE;
+			return Difficulty.NORMAL;
 		if (value >= 50)
-			return Difficulty.DIFFICULT;
+			return Difficulty.MODERATE;
 		if (value >= 25)
+			return Difficulty.DIFFICULT;
+		if (value >= 5)
 			return Difficulty.VERY_DIFFICULT;
 		return Difficulty.EXTREMELY_DIFFICULT;
 	}

@@ -1,14 +1,14 @@
 import _      from 'underscore';
 import Spells from './spells';
 import Player from './player';
+import SetFunctions from './set';
 
 /**
+ * Effect Configurations
  *
- * Effect configuration options: {
- *   negates: []     // Upon adding this effect, if any effects in this list are found, this and that effect are removed
- *   counteracts: [] // Listed effects are rendered ineffective
- *
- * }
+ * Notes:
+ *  - some effects have no direct modifiers but exist solely for being part of
+ *    synergies and combinations
  */
 var effectConfigs = {
 	// This is just an example that includes all the possibilities
@@ -16,14 +16,40 @@ var effectConfigs = {
 		noun: 'example',
 		adjective: 'exampled',
 		negates: [ 'fire' ],
-		removes: [ 'sunlight' ],
+		removes: [ 'sunlight', ':isFlammable', ':isWood' ],
 		counteracts: [ 'fog' ],
 		counteredBy: [], // I haven't yet decided if I want this, but it would make it easier to write configs some cases even if it's redundant
 		modifiers: [
 			[ 'turnSpellcasting', '+=', 10, 'makes it easier to think' ],
 			[ 'turnAccuracy',     '-=', 20, 'makes it difficult to see' ],
 			[ 'turnEvasion',      '+=', 10, 'makes it easier to move' ],
-			[ 'turnShield',       '+=', 10, 'provides a minor magical shield' ]
+			[ 'turnShield',       '+=', 10, 'provides a minor magical shield' ],
+		],
+		synergies: [
+			{
+				effects: {
+					or: [ 'cold' ],
+				},
+				modifiers: [
+					[ 'turnPain', '+=', 10, 'combined with @effect makes it slightly painful' ]
+				]
+			},
+			{
+				effects: {
+					and: [ 'fire', 'tar' ],
+				},
+				modifiers: [
+					[ 'turnPain', '+=', 10, 'combined with fire and tar makes it slightly painful' ]
+				]
+			},
+			{
+				effects: {
+					each: [ 'styrofoam', 'hay' ],
+				},
+				modifiers: [
+					[ 'turnPain', '+=', 10, 'combined with flammable materials makes it slightly painful' ]
+				]
+			},
 		],
 		modify: function(manager, playerState, isDefense) {
 			playerState.modified = true;
@@ -59,6 +85,7 @@ var effectConfigs = {
 	},
 	'entangling-roots': {
 		counteracts: [ 'levitation' ],
+		isWood: true,
 	},
 	'fog': {
 		modifiers: [
@@ -73,6 +100,7 @@ var effectConfigs = {
 
 	// BODY
 	// -------------------------------------------------------------------------
+	'hairless': {},
 	'frog-vomitting': {
 		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
@@ -110,6 +138,7 @@ var effectConfigs = {
 	},
 	'merlins-beard': {
 		// added wisdom, destroyed by fire and hairloss
+		isFlammable: true,
 	},
 	'bowel-slickery': {},
 	'bowel-stench': {},
@@ -117,9 +146,12 @@ var effectConfigs = {
 	'tiny-feet': {},
 	'swollen-tongue': {},
 	'swollen-eyes': {},
-	'wings': {},
+	'wings': {
+		isFlammable: true,
+	},
 	'bat-ears': {},
 	'noodle-arms': {},
+	'skin-irritation': {},
 
 
 	// MENTAL
@@ -217,6 +249,13 @@ class Effect {
 		this.name = name;
 	}
 
+	get noun() {
+		if (this.effect.noun)
+			return this.effect.noun;
+		else
+			return this.name;
+	}
+
 	get negatedEffects() {
 		if (this.effect.negates)
 			return this.effect.negates;
@@ -238,27 +277,49 @@ class Effect {
 	modify(manager, playerState, isDefense) {
 		// Apply listed modifiers
 		if (this.effect.modifiers) {
-			for (var i = 0; i < this.effect.modifiers.length; i++) {
-				var modifier = this.effect.modifiers[i];
-				var property = modifier[0];
-				var operator = modifier[1];
-				var operand = modifier[2];
-				switch (operator) {
-					case '*=':
-						playerState[property] *= operand;
-						break;
-					case '/=':
-						playerState[property] /= operand;
-						break;
-					case '+=':
-						playerState[property] += operand;
-						break;
-					case '-=':
-						playerState[property] -= operand;
-						break;
-					case '=':
-						playerState[property] = operand;
-						break;
+			for (let modifier of this.effect.modifiers)
+				this.applyModifier(playerState, modifier);
+		}
+
+		// Look for synergies
+		if (this.effect.synergies) {
+			for (let synergy of this.effect.synergies) {
+				var conditionsMet;
+
+				if (synergy.effects.or) {
+					conditionsMet = false;
+					for (let effectName of synergy.effects.or) {
+						if (playerState.effects.includes(effectName)) {
+							conditionsMet = true;
+							break;
+						}
+					}
+				}
+				else
+					conditionsMet = true;
+
+				if (synergy.effects.and) {
+					for (let effectName of synergy.effects.and)
+						conditionsMet &= playerState.effects.includes(effectName);
+				}
+
+				if (conditionsMet) {
+					var numTimesToApply;
+
+					if (synergy.effects.each) {
+						numTimesToApply = 0;
+						for (let effectName of synergy.effects.each) {
+							if (playerState.effects.includes(effectName))
+								numTimesToApply++;
+						}
+					}
+					else
+						numTimesToApply = 1;
+
+					for (let i = 0; i < numTimesToApply; i++) {
+						for (let modifier of synergy.modifiers)
+							this.applyModifier(playerState, modifier);
+					}
 				}
 			}
 		}
@@ -268,29 +329,47 @@ class Effect {
 			this.effect.modify.apply(this, arguments);
 	}
 
-	inverseModify(manager, playerState, isDefense) {
+	applyModifier(playerState, modifier) {
+		var property = modifier[0];
+		var operator = modifier[1];
+		var operand = modifier[2];
+		switch (operator) {
+			case '*=':
+				playerState[property] *= operand;
+				break;
+			case '/=':
+				playerState[property] /= operand;
+				break;
+			case '+=':
+				playerState[property] += operand;
+				break;
+			case '-=':
+				playerState[property] -= operand;
+				break;
+			case '=':
+				playerState[property] = operand;
+				break;
+		}
+	}
+
+	inverselyApplyModifier(playerState, modifier) {
 		// Inversly apply listed modifiers
-		if (this.effect.modifiers) {
-			for (var i = 0; i < this.effect.modifiers.length; i++) {
-				var modifier = this.effect.modifiers[i];
-				var property = modifier[0];
-				var operator = modifier[1];
-				var operand = modifier[2];
-				switch (operator) {
-					case '*=':
-						playerState[property] /= operand;
-						break;
-					case '/=':
-						playerState[property] *= operand;
-						break;
-					case '+=':
-						playerState[property] -= operand;
-						break;
-					case '-=':
-						playerState[property] += operand;
-						break;
-				}
-			}
+		var property = modifier[0];
+		var operator = modifier[1];
+		var operand = modifier[2];
+		switch (operator) {
+			case '*=':
+				playerState[property] /= operand;
+				break;
+			case '/=':
+				playerState[property] *= operand;
+				break;
+			case '+=':
+				playerState[property] -= operand;
+				break;
+			case '-=':
+				playerState[property] += operand;
+				break;
 		}
 	}
 
@@ -364,8 +443,92 @@ var Effects = {
 		return effect;
 	},
 
-	veryFlammableEffectNames: [
-		'wings', 'merlins-beard'
+	filterByAttribute(effectNames, attribute, value) {
+		if (value === undefined)
+			value = true;
+
+		return _.filter(effectNames, (effectName) => {
+			return (Effects.get(effectName)[attribute] === value);
+		});
+	},
+
+	addEffect(array, effectName, output, playerName) {
+		var effect = Effects.get(effectName);
+
+		// Check for combinations
+		var allEffects = array.slice();
+		allEffects.push(effectName);
+		{ remainingEffects, resultantEffects } = this.getCombinationResults(allEffects);
+
+		var negated = [];
+		var negates = effect.negatedEffects;
+		for (let negatedEffectName of negates) {
+			if (SetFunctions.includes(array, negatedEffectName)) {
+				SetFunctions.remove(array, negatedEffectName);
+				negated.push(negatedEffectName);
+			}
+		}
+
+		var removed = [];
+		var removes = effect.removedEffects;
+		for (let removedEffectName of removes) {
+			if (SetFunctions.includes(array, removedEffectName)) {
+				SetFunctions.remove(array, removedEffectName);
+				removed.push(removedEffectName);
+			}
+		}
+
+		var counteracted = [];
+		var counteracts = effect.counteractedEffects;
+		for (let counteractedEffectName of counteracts) {
+			if (SetFunctions.includes(array, counteractedEffectName))
+				counteracted.push(counteractedEffectName);
+		}
+
+		if (!negated.length) {
+			SetFunctions.add(array, effectName);
+
+			if (output) {
+				if (removed.length > 0)
+					this.output.append(`The ${effectName} removed @${playerName}'s ${oxfordJoin(removed)}. `);
+				if (counteracted.length > 0)
+					this.output.append(`The ${effectName} counteracted @${playerName}'s ${oxfordJoin(counteracted)}. `);
+			}
+		}
+		else if (output)
+			this.output.append(`The ${effectName} has negated @${playerName}'s ${oxfordJoin(negated)}. `);
+	},
+
+	removeEffect(array, effectName) {
+		SetFunctions.remove(array, effectName);
+	},
+
+	getCombinationResults(effectNames, output, playerName) {
+		var combinationOccurred = false;
+		var remainingEffects = effectNames.splice();
+		var resultantEffects = [];
+
+		for (let combination of this.combinations) {
+			var intersection = _.intersection(combination[0], allEffects);
+			if (intersection.length === combination[0].length) {
+				combinationOccurred = true;
+
+				for (let combinationEffectName of combination[0])
+					SetFunctions.remove(remainingEffects, combinationEffectName);
+
+				for (let resultantEffectName of combination[1])
+					SetFunctions.add(resultantEffects, resultantEffectName);
+			}
+		}
+
+		if (combinationOccurred) {
+			
+		}
+		return { remainingEffects, resultantEffects };
+	},
+
+	combinations: [
+		[ [ 'cold', 'wet' ], [ 'frost' ] ],
 	],
 
 };

@@ -3,6 +3,8 @@ import Player from './player';
 import friendlyBards   from './data/friendly-bards.json';
 import unfriendlyBards from './data/unfriendly-bards.json';
 
+const AUTOMATIC_HIT = 99999;
+
 var spellConfigs = [
 	{
 		incantation: 'volito',
@@ -63,6 +65,7 @@ var spellConfigs = [
 			return `${bardName} is summoned to play inspiring music.`;
 		},
 		effects: [ 'friendly-bard' ],
+		hitModifier: AUTOMATIC_HIT,
 	},
 	{
 		incantation: 'TODO: UNFRIENDLY BARD',
@@ -72,10 +75,17 @@ var spellConfigs = [
 			return `${bardName} is summoned to play demoralizing music.`;
 		},
 		effects: [ 'unfriendly-bard' ],
+		hitModifier: AUTOMATIC_HIT,
 	},
 	{
 		incantation: 'TODO: BANISH FRIENDLIES',
 		description: 'banishes friendlies',
+	},
+	{
+		incantation: 'TODO: DROP ANVIL',
+		description: 'banishes friendlies',
+		effects: [ 'crushed' ],
+		hitModifier: -30,
 	},
 	{
 		incantation: 'TODO: CURE INFLAMMATION',
