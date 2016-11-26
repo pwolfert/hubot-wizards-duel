@@ -1,6 +1,8 @@
-import _      from 'underscore';
-import Spells from './spells';
-import Player from './player';
+import _            from 'underscore';
+import oxfordJoin   from 'oxford-join';
+import Spells       from './spells';
+import Player       from './player';
+import Effect       from './effect';
 import SetFunctions from './set';
 
 /**
@@ -31,24 +33,24 @@ var effectConfigs = {
 					or: [ 'cold' ],
 				},
 				modifiers: [
-					[ 'turnPain', '+=', 10, 'combined with @effect makes it slightly painful' ]
-				]
+					[ 'turnPain', '+=', 10, 'combined with @effect makes it slightly painful' ],
+				],
 			},
 			{
 				effects: {
 					and: [ 'fire', 'tar' ],
 				},
 				modifiers: [
-					[ 'turnPain', '+=', 10, 'combined with fire and tar makes it slightly painful' ]
-				]
+					[ 'turnPain', '+=', 10, 'combined with fire and tar makes it slightly painful' ],
+				],
 			},
 			{
 				effects: {
 					each: [ 'styrofoam', 'hay' ],
 				},
 				modifiers: [
-					[ 'turnPain', '+=', 10, 'combined with flammable materials makes it slightly painful' ]
-				]
+					[ 'turnPain', '+=', 10, 'combined with flammable materials makes it slightly painful' ],
+				],
 			},
 		],
 		modify: function(manager, playerState, isDefense) {
@@ -62,7 +64,7 @@ var effectConfigs = {
 		// Called when a player is about to be hit by a spell
 		beforeHit: function(manager, player, spell, onSelf) {
 
-		}
+		},
 	},
 
 	// ELEMENTAL
@@ -95,6 +97,9 @@ var effectConfigs = {
 	},
 	'sunlight': {
 		negates: [ 'fog' ],
+	},
+	'rain': {
+		isWater: true,
 	},
 
 
@@ -224,7 +229,7 @@ var effectConfigs = {
 		beforeHit: function(manager, player, spell, onSelf) {
 			manager.output.append(`The ${spell.projectileDescription} passes straight through @${player.state.name} with no effect`);
 			return false;
-		}
+		},
 	},
 
 	/**
@@ -235,190 +240,8 @@ var effectConfigs = {
 	},
 	'rainstorm-arena': {
 		global: true,
-	}
+	},
 };
-
-/**
- * Class for effect instances that wraps some standard functionality around the
- *   configuration.
- */
-class Effect {
-
-	constructor(name, effectConfig) {
-		this.effect = effectConfig;
-		this.name = name;
-	}
-
-	get noun() {
-		if (this.effect.noun)
-			return this.effect.noun;
-		else
-			return this.name;
-	}
-
-	get negatedEffects() {
-		if (this.effect.negates)
-			return this.effect.negates;
-		return [];
-	}
-
-	get removedEffects() {
-		if (this.effect.removes)
-			return this.effect.removes;
-		return [];
-	}
-
-	get counteractedEffects() {
-		if (this.effect.counteracts)
-			return this.effect.counteracts;
-		return [];
-	}
-
-	modify(manager, playerState, isDefense) {
-		// Apply listed modifiers
-		if (this.effect.modifiers) {
-			for (let modifier of this.effect.modifiers)
-				this.applyModifier(playerState, modifier);
-		}
-
-		// Look for synergies
-		if (this.effect.synergies) {
-			for (let synergy of this.effect.synergies) {
-				var conditionsMet;
-
-				if (synergy.effects.or) {
-					conditionsMet = false;
-					for (let effectName of synergy.effects.or) {
-						if (playerState.effects.includes(effectName)) {
-							conditionsMet = true;
-							break;
-						}
-					}
-				}
-				else
-					conditionsMet = true;
-
-				if (synergy.effects.and) {
-					for (let effectName of synergy.effects.and)
-						conditionsMet &= playerState.effects.includes(effectName);
-				}
-
-				if (conditionsMet) {
-					var numTimesToApply;
-
-					if (synergy.effects.each) {
-						numTimesToApply = 0;
-						for (let effectName of synergy.effects.each) {
-							if (playerState.effects.includes(effectName))
-								numTimesToApply++;
-						}
-					}
-					else
-						numTimesToApply = 1;
-
-					for (let i = 0; i < numTimesToApply; i++) {
-						for (let modifier of synergy.modifiers)
-							this.applyModifier(playerState, modifier);
-					}
-				}
-			}
-		}
-
-		// Call modify function if it exists
-		if (this.effect.modify)
-			this.effect.modify.apply(this, arguments);
-	}
-
-	applyModifier(playerState, modifier) {
-		var property = modifier[0];
-		var operator = modifier[1];
-		var operand = modifier[2];
-		switch (operator) {
-			case '*=':
-				playerState[property] *= operand;
-				break;
-			case '/=':
-				playerState[property] /= operand;
-				break;
-			case '+=':
-				playerState[property] += operand;
-				break;
-			case '-=':
-				playerState[property] -= operand;
-				break;
-			case '=':
-				playerState[property] = operand;
-				break;
-		}
-	}
-
-	inverselyApplyModifier(playerState, modifier) {
-		// Inversly apply listed modifiers
-		var property = modifier[0];
-		var operator = modifier[1];
-		var operand = modifier[2];
-		switch (operator) {
-			case '*=':
-				playerState[property] /= operand;
-				break;
-			case '/=':
-				playerState[property] *= operand;
-				break;
-			case '+=':
-				playerState[property] -= operand;
-				break;
-			case '-=':
-				playerState[property] += operand;
-				break;
-		}
-	}
-
-	getDefenseModifiersNarration(playerState) {
-		const defenseModifiers = [ 'turnEvasion' ]
-	}
-
-	getOffenseModifiersNarration(playerState) {
-		// 'Spellcasting chance is lowered'
-	}
-
-	counteracts(effectName) {
-		if (this.effect.counteracts)
-			return this.effect.counteracts.includes(effectName);
-		else
-			return false;
-	}
-
-	negates(effectName) {
-		if (this.effect.negates)
-			return this.effect.negates.includes(effectName);
-		else
-			return false;
-	}
-
-	/**
-	 * Called on every active effect before a player attempts a spell cast.
-	 *   If `false` is returned, the spell won't be cast.
-	 */
-	beforeCast(manager, player, spell, onSelf) {
-		if (this.effect.beforeCast)
-			return this.effect.beforeCast.apply(this, arguments);
-
-		return true;
-	}
-
-	/**
-	 * Called on every active effect when a player is about to be hit by a spell.
-	 *   If `false` is returned, the spell won't hit.
-	 */
-	beforeHit(manager, player, spell, onSelf) {
-		if (this.effect.beforeHit)
-			return this.effect.beforeHit.apply(this, arguments);
-
-		return true;
-	}
-
-}
-
 
 /**
  * The interface through which we will access effects from other modules
@@ -452,55 +275,98 @@ var Effects = {
 		});
 	},
 
-	addEffect(array, effectName, output, playerName) {
-		var effect = Effects.get(effectName);
-
-		// Check for combinations
-		var allEffects = array.slice();
-		allEffects.push(effectName);
-		{ remainingEffects, resultantEffects } = this.getCombinationResults(allEffects);
-
-		var negated = [];
-		var negates = effect.negatedEffects;
-		for (let negatedEffectName of negates) {
-			if (SetFunctions.includes(array, negatedEffectName)) {
-				SetFunctions.remove(array, negatedEffectName);
-				negated.push(negatedEffectName);
-			}
-		}
-
-		var removed = [];
-		var removes = effect.removedEffects;
-		for (let removedEffectName of removes) {
-			if (SetFunctions.includes(array, removedEffectName)) {
-				SetFunctions.remove(array, removedEffectName);
-				removed.push(removedEffectName);
-			}
-		}
-
-		var counteracted = [];
-		var counteracts = effect.counteractedEffects;
-		for (let counteractedEffectName of counteracts) {
-			if (SetFunctions.includes(array, counteractedEffectName))
-				counteracted.push(counteractedEffectName);
-		}
-
-		if (!negated.length) {
-			SetFunctions.add(array, effectName);
-
-			if (output) {
-				if (removed.length > 0)
-					this.output.append(`The ${effectName} removed @${playerName}'s ${oxfordJoin(removed)}. `);
-				if (counteracted.length > 0)
-					this.output.append(`The ${effectName} counteracted @${playerName}'s ${oxfordJoin(counteracted)}. `);
-			}
-		}
-		else if (output)
-			this.output.append(`The ${effectName} has negated @${playerName}'s ${oxfordJoin(negated)}. `);
+	getNouns(effectNames) {
+		return effectNames.map((name) => this.get(name).noun);
 	},
 
-	removeEffect(array, effectName) {
-		SetFunctions.remove(array, effectName);
+	addEffect(currentEffectNames, effectName, output, playerName) {
+		var effect = Effects.get(effectName);
+
+		var allNewEffectNames = [ effectName ];
+		var allEffectNames = currentEffectNames.concat([ effectName ]);
+
+		// Recursively check for combinations
+		var remainingEffects;
+		var resultantEffects;
+		do {
+			({ remainingEffects, resultantEffects } = this.getCombinationResults(allEffectNames, output, playerName));
+
+			if (resultantEffects.length) {
+				allEffectNames = remainingEffects.concat(resultantEffects);
+				allNewEffectNames = allNewEffectNames.concat(resultantEffects);
+			}
+		} while (resultantEffects.length);
+
+		// Figure out, after all the combining, what our new effects are
+		var newEffectNames = _.intersection(allEffectNames, allNewEffectNames);
+
+		// Then with all the new effects, see if they negate or remove any existing effects
+		for (let newEffectName of newEffectNames) {
+			var negated = this.getNegatedEffects(allEffectNames, newEffectName);
+			if (negated.length) {
+				SetFunctions.remove(allEffectNames, newEffectName);
+				for (let negatedEffectName of negated)
+					SetFunctions.remove(allEffectNames, negatedEffectName);
+
+				if (output)
+					output.append(`The ${effectName} has negated @${playerName}'s ${oxfordJoin(negated)}. `);
+			}
+
+			var removed = this.getRemovedEffects(allEffectNames, newEffectName);
+			
+			for (let removedEffectName of removed)
+				SetFunctions.remove(allEffectNames, removedEffectName);
+
+			if (output) {
+				if (removed.length)
+					output.append(`The ${effectName} removed @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
+
+				var counteracted = this.getCounteractedEffects(allEffectNames, newEffectName);
+				if (counteracted.length)
+					output.append(`The ${effectName} counteracted @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
+			}
+		}
+
+		return allEffectNames;
+	},
+
+	removeEffect(currentEffectNames, effectName, output, playerName) {
+		if (output)
+			output.append(`@${playerName}'s ${Effects.get(effectName).noun} has been removed. `);
+		return _.without(currentEffectNames, effectName);
+	},
+
+	getCounteractedEffects(effectNames, effectName) {
+		var effect = Effects.get(effectName);
+		var counteractedEffectNames = [];
+		for (let counteractedEffectName of effect.counteractedEffects) {
+			if (SetFunctions.includes(effectNames, counteractedEffectName))
+				counteractedEffectNames.push(counteractedEffectName);
+		}
+
+		return counteractedEffectNames;
+	},
+
+	getNegatedEffects(effectNames, effectName) {
+		var effect = Effects.get(effectName);
+		var negatedEffectNames = [];
+		for (let negatedEffectName of effect.negatedEffects) {
+			if (SetFunctions.includes(effectNames, negatedEffectName))
+				negatedEffectNames.push(negatedEffectName);
+		}
+
+		return negatedEffectNames;
+	},
+
+	getRemovedEffects(effectNames, effectName) {
+		var effect = Effects.get(effectName);
+		var removedEffectNames = [];
+		for (let removedEffectName of effect.removedEffects) {
+			if (SetFunctions.includes(effectNames, removedEffectName))
+				removedEffectNames.push(removedEffectName);
+		}
+
+		return removedEffectNames;
 	},
 
 	getCombinationResults(effectNames, output, playerName) {
@@ -509,26 +375,38 @@ var Effects = {
 		var resultantEffects = [];
 
 		for (let combination of this.combinations) {
-			var intersection = _.intersection(combination[0], allEffects);
+			// If the intersection of the player's effects and the listed combinator
+			//   effects in the combination entry is equal to the list of combinator
+			//   effects, then we have all the ingredients we need.
+			var intersection = _.intersection(combination[0], effectNames);
 			if (intersection.length === combination[0].length) {
 				combinationOccurred = true;
 
-				for (let combinationEffectName of combination[0])
-					SetFunctions.remove(remainingEffects, combinationEffectName);
+				for (let combinationEffectName of combination[0]) {
+					// Only remove it if it's not in the results list
+					if (!combination[1].includes(combinationEffectName))
+						SetFunctions.remove(remainingEffects, combinationEffectName);
+				}
 
-				for (let resultantEffectName of combination[1])
+				// Only add it to the results if it wasn't already in the effects list
+				var realResults = _.difference(combination[1], combination[0]);
+				for (let resultantEffectName of realResults)
 					SetFunctions.add(resultantEffects, resultantEffectName);
+
+				if (output) {
+					var ingredientNouns = this.getNouns(combination[0]);
+					var resultNouns     = this.getNouns(realResults);
+					output.append(`The ${oxfordJoin(ingredientNouns)} combined, resulting in ${oxfordJoin(resultNouns)}. `);
+				}
 			}
 		}
 
-		if (combinationOccurred) {
-			
-		}
 		return { remainingEffects, resultantEffects };
 	},
 
 	combinations: [
-		[ [ 'cold', 'wet' ], [ 'frost' ] ],
+		[ [ 'cold', 'water' ], [ 'ice' ] ],
+		[ [ 'cold', 'rain' ], [ 'ice', 'rain' ] ],
 	],
 
 };

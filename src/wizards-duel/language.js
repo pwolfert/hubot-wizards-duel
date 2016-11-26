@@ -58,7 +58,7 @@ const Language = {
 		if (value >= 5)
 			return Difficulty.VERY_DIFFICULT;
 		return Difficulty.EXTREMELY_DIFFICULT;
-	}
+	},
 
 };
 

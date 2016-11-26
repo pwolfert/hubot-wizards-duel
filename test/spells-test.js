@@ -15,6 +15,11 @@ describe('Spells', () => {
 			hear: () => {},
 		});
 
+		manager.startOutput({
+			send: function() {},
+			reply: function() {},
+		});
+
 		player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
 	});
 

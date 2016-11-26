@@ -163,7 +163,7 @@ class Player {
 	 * @param {string} effectName - the effects array key for the effect
 	 */
 	addEffect(effectName) {
-		Effects.addEffect(this.state.effects, effectName, this.output, this.state.name);
+		this.state.effects = Effects.addEffect(this.state.effects, effectName, this.output, this.state.name);
 	}
 
 	/**
@@ -172,7 +172,7 @@ class Player {
 	 * @param {string} effectName - the effects array key for the effect
 	 */
 	removeEffect(effectName) {
-		Effects.removeEffect(this.state.effects, effectName);
+		this.state.effects = Effects.removeEffect(this.state.effects, effectName, this.output, this.state.name);
 	}
 
 	getAffectedState(isDefense) {
