@@ -319,11 +319,11 @@ var Effects = {
 
 			if (output) {
 				if (removed.length)
-					output.append(`The ${newEffectName} removed @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
+					output.append(`The ${newEffectName} has removed @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
 
 				var counteracted = this.getCounteractedEffects(allEffectNames, newEffectName);
 				if (counteracted.length)
-					output.append(`The ${newEffectName} counteracted @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
+					output.append(`The ${newEffectName} has counteracted @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
 			}
 		}
 

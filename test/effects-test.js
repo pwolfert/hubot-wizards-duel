@@ -175,10 +175,21 @@ describe('Effects', () => {
 
 			expect(effectNames).to.have.members(['c-dough', 'c-water', 'c-fire-fairies']);
 			expect(effectNames).to.not.have.members(['c-fire', 'c-ice', 'c-filth', 'c-flour']);
-
 			expect(manager.output.messages).to.deep.eql([{
 				type: OutputBuffer.MESSAGE_SEND,
-				content: "The c-fire and c-ice combined, resulting in c-water. The c-water and c-flour combined, resulting in c-dough. The c-water removed @alice's c-filth. ",
+				content: "The c-fire and c-ice combined, resulting in c-water. The c-water and c-flour combined, resulting in c-dough. The c-water has removed @alice's c-filth. ",
+			}]);
+
+			manager.flushOutput();
+			manager.startOutput(fakeResponseObject);
+
+			var effectNames = Effects.addEffect(['c-fire-fairies'], 'c-ice', manager.output, 'alice');
+			manager.output.endMessage();
+
+			expect(effectNames).to.not.have.members(['c-ice', 'c-fire-fairies']);
+			expect(manager.output.messages).to.deep.eql([{
+				type: OutputBuffer.MESSAGE_SEND,
+				content: "The c-ice has negated @alice's c-fire-fairies. ",
 			}]);
 		});
 
