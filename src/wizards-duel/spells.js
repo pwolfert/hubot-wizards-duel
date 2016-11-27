@@ -97,7 +97,7 @@ var spellConfigs = [
 		incantation: 'TODO: FIREBALL',
 		description: 'has a chance to catch things on fire',
 		onHitTarget: function(manager, target, onSelf) {
-			var flammableEffects = _.intersection(target.state.effects, Effects.veryFlammableEffectNames);
+			var flammableEffects = _.intersection(target.state.effects, Effects.filterByAttribute('flammable'));
 			// Calculate chance to catch on fire (aided by presence of very flammable effects)
 			var toCatchOnFire = 0.5 + 0.25 * flammableEffects.length;
 			if (Math.random() <= toCatchOnFire) {

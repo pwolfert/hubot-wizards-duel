@@ -5,7 +5,7 @@ import Effects      from '../src/wizards-duel/effects.js';
 import OutputBuffer from '../src/wizards-duel/output-buffer.js';
 import sinon        from 'sinon';
 import 'sinon-chai';
-
+import _ from 'underscore'
 var expect = chai.expect;
 
 describe('Effects', () => {
@@ -193,9 +193,38 @@ describe('Effects', () => {
 			}]);
 		});
 
-		// it('#removeEffect returns appropriate values and outputs correct text', () => {
-		//
-		// });
+		it('#removeEffect returns appropriate values and outputs correct text', () => {
+			Effects.create('r-bobishness', { noun: 'bobishness' });
+
+			manager.startOutput(fakeResponseObject);
+			var effectNames = Effects.removeEffect(['r-bobishness'], 'r-bobishness', manager.output, 'alice');
+			manager.output.endMessage();
+
+			expect(effectNames).to.not.have.members(['r-bobishness']);
+			expect(manager.output.messages).to.deep.eql([{
+				type: OutputBuffer.MESSAGE_SEND,
+				content: "@alice's bobishness has been removed. ",
+			}]);
+		});
+
+		it('#filterByAttribute filters effects by attribute', () => {
+			Effects.create('f-filtered-1', { isFilterExample: true });
+			Effects.create('f-filtered-2', { isFilterExample: true });
+			Effects.create('f-not-filtered-1', { isFilterExample: false });
+			Effects.create('f-not-filtered-2', {});
+
+			var filteredEffects = Effects.filterByAttribute('isFilterExample');
+			expect(filteredEffects).to.have.members(['f-filtered-1', 'f-filtered-2']);
+			expect(filteredEffects).to.not.have.members(['f-not-filtered-1', 'f-not-filtered-2']);
+
+			filteredEffects = Effects.filterByAttribute(['f-filtered-2', 'f-not-filtered-1', 'f-not-filtered-2'], 'isFilterExample');
+			expect(filteredEffects).to.have.members(['f-filtered-2']);
+			expect(filteredEffects).to.not.have.members(['f-filtered-1', 'f-not-filtered-1', 'f-not-filtered-2']);
+
+			filteredEffects = Effects.filterByAttribute(['f-filtered-2', 'f-not-filtered-1', 'f-not-filtered-2'], 'isFilterExample', false);
+			expect(filteredEffects).to.have.members(['f-not-filtered-1']);
+			expect(filteredEffects).to.not.have.members(['f-filtered-2', 'f-not-filtered-2']);
+		});
 	});
 
 });

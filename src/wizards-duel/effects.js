@@ -253,7 +253,6 @@ var Effects = {
 	}),
 
 	get(effectName) {
-		// Create an object with callable functions
 		return this.effects[effectName];
 	},
 
@@ -267,11 +266,17 @@ var Effects = {
 	},
 
 	filterByAttribute(effectNames, attribute, value) {
+		if (typeof effectNames === 'string') {
+			value = attribute;
+			attribute = effectNames;
+			effectNames = _.map(this.effects, (effect) => effect.name);
+		}
+
 		if (value === undefined)
 			value = true;
 
 		return _.filter(effectNames, (effectName) => {
-			return (Effects.get(effectName)[attribute] === value);
+			return (Effects.get(effectName).effect[attribute] === value);
 		});
 	},
 
