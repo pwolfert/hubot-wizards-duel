@@ -9,6 +9,8 @@ class OutputBuffer {
 	}
 
 	flush() {
+		this.endMessage();
+		
 		for (let message of this.messages) {
 			if (message.type === MESSAGE_SEND)
 				this.response.send(message.content);

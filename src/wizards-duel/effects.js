@@ -309,21 +309,21 @@ var Effects = {
 					SetFunctions.remove(allEffectNames, negatedEffectName);
 
 				if (output)
-					output.append(`The ${effectName} has negated @${playerName}'s ${oxfordJoin(negated)}. `);
+					output.append(`The ${newEffectName} has negated @${playerName}'s ${oxfordJoin(negated)}. `);
 			}
 
 			var removed = this.getRemovedEffects(allEffectNames, newEffectName);
-			
+
 			for (let removedEffectName of removed)
 				SetFunctions.remove(allEffectNames, removedEffectName);
 
 			if (output) {
 				if (removed.length)
-					output.append(`The ${effectName} removed @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
+					output.append(`The ${newEffectName} removed @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
 
 				var counteracted = this.getCounteractedEffects(allEffectNames, newEffectName);
 				if (counteracted.length)
-					output.append(`The ${effectName} counteracted @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
+					output.append(`The ${newEffectName} counteracted @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
 			}
 		}
 
@@ -371,7 +371,7 @@ var Effects = {
 
 	getCombinationResults(effectNames, output, playerName) {
 		var combinationOccurred = false;
-		var remainingEffects = effectNames.splice();
+		var remainingEffects = effectNames.slice();
 		var resultantEffects = [];
 
 		for (let combination of this.combinations) {
