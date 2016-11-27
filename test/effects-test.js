@@ -30,9 +30,9 @@ describe('Effects', () => {
 		it('#modify modifies player state properties', () => {
 			var effect = Effects.create('example', {
 				modifiers: [
-					[ 'turnSpellcasting', '+=', 0.1, '' ],
-					[ 'turnAccuracy',     '-=', 0.2, '' ],
-					[ 'turnEvasion',      '+=', 0.2, '' ],
+					[ 'turnSpellcasting', '+=', 10, '' ],
+					[ 'turnAccuracy',     '-=', 20, '' ],
+					[ 'turnEvasion',      '+=', 20, '' ],
 				],
 				modify: function(manager, playerState, isDefense) {
 					playerState.modified = true;
@@ -40,17 +40,102 @@ describe('Effects', () => {
 				},
 			});
 
-			playerState.turnSpellcasting = 0.5;
-			playerState.turnAccuracy     = 0.5;
-			playerState.turnEvasion      = 0.5;
+			playerState.turnSpellcasting = 50;
+			playerState.turnAccuracy     = 50;
+			playerState.turnEvasion      = 50;
 
 			effect.modify(manager, playerState, false);
 
-			expect(playerState.turnSpellcasting).to.be.closeTo(0.6, 0.01);
-			expect(playerState.turnAccuracy).to.be.closeTo(0.3, 0.01);
-			expect(playerState.turnEvasion).to.be.closeTo(0.7, 0.01);
+			expect(playerState.turnSpellcasting).to.eql(60);
+			expect(playerState.turnAccuracy).to.eql(30);
+			expect(playerState.turnEvasion).to.eql(70);
 			expect(playerState.modified).to.be.true;
 			expect(playerState.modifiedIsDefense).to.be.false;
+		});
+
+		it('#modify takes into account synergies', () => {
+			Effects.create('syn-heat-1', {});
+			Effects.create('syn-heat-2', {});
+			Effects.create('syn-heat-3', {});
+			var furCoat = Effects.create('syn-fur-coat', {
+				synergies: [{
+					effects: {
+						or: [ 'syn-heat-1', 'syn-heat-2' ],
+					},
+					modifiers: [
+						[ 'turnPain', '+=', 10, 'combined with @effect makes it too hot' ],
+					],
+				},
+				{
+					effects: {
+						and: [ 'syn-heat-1', 'syn-heat-3' ],
+					},
+					modifiers: [
+						[ 'turnEvasion', '+=', 10, 'when it is really hot, sweat lubricates' ],
+					],
+				}],
+			});
+
+			playerState.turnSpellcasting = 100;
+			playerState.turnAccuracy     = 90;
+			playerState.turnEvasion      = 10;
+			playerState.turnPain         = 0;
+			playerState.effects = [ 'syn-heat-1', 'syn-heat-3', 'syn-fur-coat' ];
+
+			furCoat.modify(manager, playerState, false);
+
+			expect(playerState.turnSpellcasting).to.eql(100);
+			expect(playerState.turnAccuracy).to.eql(90);
+			expect(playerState.turnEvasion).to.eql(20);
+			expect(playerState.turnPain).to.eql(10);
+
+			Effects.create('syn-a', {});
+			Effects.create('syn-b', {});
+			Effects.create('syn-c', {});
+			Effects.create('syn-d', {});
+			var e = Effects.create('syn-e', {
+				synergies: [{
+					effects: {
+						or: [ 'syn-a', 'syn-b' ],
+						and: [ 'syn-c', 'syn-d' ],
+					},
+					modifiers: [
+						[ 'turnSpellcasting', '-=', 20, '' ],
+					],
+				}],
+			});
+
+			playerState.turnSpellcasting = 100;
+			playerState.effects = [ 'syn-b', 'syn-c', 'syn-e' ];
+
+			e.modify(manager, playerState, false);
+
+			expect(playerState.turnSpellcasting).to.eql(100);
+
+			playerState.turnSpellcasting = 100;
+			playerState.effects = [ 'syn-b', 'syn-c', 'syn-d', 'syn-e' ];
+
+			e.modify(manager, playerState, false);
+
+			expect(playerState.turnSpellcasting).to.eql(80);
+
+			var f = Effects.create('syn-e', {
+				synergies: [{
+					effects: {
+						each: [ 'syn-a', 'syn-b', 'syn-d' ],
+					},
+					modifiers: [
+						[ 'turnSpellcasting', '-=', 10, '' ],
+					],
+				}],
+			});
+
+			playerState.turnSpellcasting = 100;
+			playerState.effects = [ 'syn-a', 'syn-b', 'syn-c', 'syn-d', 'syn-e' ];
+
+			f.modify(manager, playerState, false);
+
+			expect(playerState.turnSpellcasting).to.eql(70);
 		});
 
 		it('#contains works', () => {

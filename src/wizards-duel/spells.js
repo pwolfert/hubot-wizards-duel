@@ -59,7 +59,7 @@ var spellConfigs = [
 		baseSuccessRate: 0.75,
 	},
 	{
-		incantation: 'TODO: FRIENDLY BARD',
+		incantation: 'evoco baridum amicum',
 		description: 'conjures a friendly bard',
 		narration: function(target) {
 			var bardName = _.sample(friendlyBards);
@@ -69,7 +69,7 @@ var spellConfigs = [
 		hitModifier: AUTOMATIC_HIT,
 	},
 	{
-		incantation: 'TODO: UNFRIENDLY BARD',
+		incantation: 'evoco inimicum vatis',
 		description: 'conjures an ufriendly bard',
 		narration: function(target) {
 			var bardName = _.sample(unfriendlyBards);
@@ -83,10 +83,13 @@ var spellConfigs = [
 		description: 'banishes friendlies',
 	},
 	{
-		incantation: 'TODO: DROP ANVIL',
+		incantation: 'anvillus dropio',
 		description: 'banishes friendlies',
 		effects: [ 'crushed' ],
 		hitModifier: -30,
+		onHitTarget: function(manager, target, onSelf) {
+			manager.output.append(`An anvil drops on @${target}.`);
+		},
 	},
 	{
 		incantation: 'TODO: CURE INFLAMMATION',
