@@ -53,5 +53,5 @@
   },
   "scripts": {
     "postinstall": "grunt build"
-  },
+  }
 }
