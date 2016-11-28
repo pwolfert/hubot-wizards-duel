@@ -1,16 +1,16 @@
 {
   "name": "hubot-wizards-duel",
   "description": "Hubot script that allows users to engage in one-on-one wizard's duels",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "author": "Patrick Wolfert <patrickrwolfert@gmail.com> (https://github.com/pwolfert)",
   "license": "MIT",
   "keywords": "hubot, hubot-scripts, wizard, duel, dueling, fight, battle",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-wizards-duel.git"
+    "url": "git://github.com/pwolfert/hubot-wizards-duel.git"
   },
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-wizards-duel/issues"
+    "url": "https://github.com/pwolfert/hubot-wizards-duel/issues"
   },
   "dependencies": {
     "babel-cli": "^6.18.0",
