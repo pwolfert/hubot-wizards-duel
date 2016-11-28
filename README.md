@@ -1,8 +1,6 @@
 # hubot-wizards-duel
 
-Hubot script that allows users to engage in one-on-one wizard's duels
-
-See [`src/wizards-duel.js`](src/wizards-duel.js) for full documentation.
+This is a Hubot script that allows users to engage in one-on-one wizard's duels.
 
 ## Installation
 
@@ -21,5 +19,3 @@ Then add **hubot-wizards-duel** to your `external-scripts.json`:
 ## NPM Module
 
 https://www.npmjs.com/package/hubot-wizards-duel
-
-If I really get tired with not having ES6 string interpolation: https://github.com/github/hubot/issues/1009

@@ -50,5 +50,8 @@
     "test": "grunt test",
     "build": "grunt build",
     "watch": "grunt watch"
-  }
+  },
+  "scripts": {
+    "postinstall": "grunt build"
+  },
 }
