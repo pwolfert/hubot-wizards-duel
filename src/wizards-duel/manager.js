@@ -230,8 +230,8 @@ class Manager {
 
 			this.output.send([
 				'*Hear ye! Hear ye!*',
-				`A duel shall now commence between @${challenger} and @${challengee}!` +
-				`@${startingPlayer}, you have won the coin toss and may start your offensive turn.  ` +
+				`A duel shall now commence between @${challenger} and @${challengee}! ` +
+				`@${startingPlayer}, you have won the coin toss and may start your offensive turn. ` +
 				'For a list of rules, type "dueling rules". ' +
 				'For the list of spells, type "list spells"',
 			].join('\n'));
@@ -293,8 +293,8 @@ class Manager {
 				if (!onSelf && !turn.attack) {
 					// They skipped the passive part of their turn
 					this.output.send(`@${player.state.name} skipped his passive turn and went right to the attack!`);
-					// Go straight to the beginning of the opponent's turn
-					this.startPassiveTurn(player.state.opponent, challenger, challengee);
+					// Count this as the attack turn
+					turn.attack = true;
 				}
 				else {
 					// The player just used the passive part of his turn.  Go to his attack
@@ -308,6 +308,12 @@ class Manager {
 					player.state.numFailures++;
 
 				player.save();
+
+				// If this was the attack turn, start the opponent's passive turn
+				if (turn.attack) {
+					this.startPassiveTurn(player.state.opponent, challenger, challengee);
+					this.output.send(`@${player.state.opponent}, it is now the beginning of your turn.`);
+				}
 
 				if (player.state.numFailures >= NUM_FAILURES_TO_LOSE) {
 					this.duelEnded(challenger, challengee, {

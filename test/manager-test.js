@@ -74,8 +74,8 @@ describe('Manager', () => {
 				['bob', message2],
 				['hubot', [
 					'*Hear ye! Hear ye!*',
-					`A duel shall now commence between @alice and @bob!` +
-					`@${startingPlayer}, you have won the coin toss and may start your offensive turn.  ` +
+					`A duel shall now commence between @alice and @bob! ` +
+					`@${startingPlayer}, you have won the coin toss and may start your offensive turn. ` +
 					'For a list of rules, type "dueling rules". ' +
 					'For the list of spells, type "list spells"',
 				].join('\n')]

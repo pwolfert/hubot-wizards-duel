@@ -32,11 +32,11 @@ class Player {
 	}
 
 	save() {
-		manager.setPlayerState(this.state.name, this.state);
+		this.manager.setPlayerState(this.state.name, this.state);
 	}
 
 	load() {
-		this.state = manager.getPlayerState(this.state.name);
+		this.state = this.manager.getPlayerState(this.state.name);
 	}
 
 	static getInitialState(name, isChallenger, opponent) {

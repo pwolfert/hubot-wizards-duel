@@ -68,13 +68,13 @@ export default class Spell {
 				target.removeEffect(this.removedEffects[i]);
 		}
 
-		// If it's the opponent, we need to save
-		if (!onSelf)
-			target.save();
-
 		// Call the spell config's cast function if it exists
 		if (this.spell.cast)
 			this.spell.cast.apply(this, arguments);
+
+		// If it's the opponent, we need to save
+		if (!onSelf)
+			target.save();
 	}
 
 	onHitTarget(manager, player, onSelf) {

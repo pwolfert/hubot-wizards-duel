@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Player from './player';
 import Spell from './spell';
+import Effects from './effects';
 import friendlyBards   from './data/friendly-bards.json';
 import unfriendlyBards from './data/unfriendly-bards.json';
 
@@ -105,10 +106,10 @@ var spellConfigs = [
 			var toCatchOnFire = 0.5 + 0.25 * flammableEffects.length;
 			if (Math.random() <= toCatchOnFire) {
 				target.addEffect('fire');
-				manager.output.append(`@${target} has caught fire.`);
+				manager.output.append(`@${target.state.name} has caught fire.`);
 			}
 			else {
-				manager.output.append(`@${target} does not catch fire.`);
+				manager.output.append(`@${target.state.name} does not catch fire.`);
 			}
 		},
 	},
