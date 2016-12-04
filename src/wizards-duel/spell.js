@@ -1,5 +1,7 @@
-import _ from 'underscore';
-import Player from './player';
+import _          from 'underscore';
+import oxfordJoin from 'oxford-join';
+import Player     from './player';
+import Effects    from './effects';
 
 /**
  * Class representing a spell, wrapping additional functionality around
@@ -54,18 +56,34 @@ export default class Spell {
 		return 1;
 	}
 
+	get hitModifier() {
+		if (this.spell.hitModifier)
+			return this.spell.hitModifier;
+		return 0;
+	}
+
 	cast(manager, player, onSelf) {
 		var i;
 		var target = onSelf ? player : new Player(manager, player.state.opponent);
 
 		// Add effects as appropriate
-		for (i = 0; i < this.effects.length; i++)
-			target.addEffect(this.effects[i]);
+		if (this.effects.length) {
+			var nouns = Effects.getNouns(this.effects);
+			manager.output.append(`_${this.incantation}_ adds ${oxfordJoin(nouns)} to @${target.state.name}. `);
+
+			for (i = 0; i < this.effects.length; i++)
+				target.addEffect(this.effects[i]);
+		}
 
 		// Remove effects as appropriate
-		for (i = 0; i < this.removedEffects.length; i++) {
-			if (target.state.effects.includes(this.removedEffects[i]))
-				target.removeEffect(this.removedEffects[i]);
+		if (this.removedEffects.length) {
+			nouns = Effects.getNouns(this.removedEffects);
+			manager.output.append(`_${this.incantation}_ removes ${oxfordJoin(nouns)} to @${target.state.name}. `);
+
+			for (i = 0; i < this.removedEffects.length; i++) {
+				if (target.state.effects.includes(this.removedEffects[i]))
+					target.removeEffect(this.removedEffects[i]);
+			}
 		}
 
 		// Call the spell config's cast function if it exists

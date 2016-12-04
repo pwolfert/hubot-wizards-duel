@@ -1,6 +1,8 @@
 import Helper  from 'hubot-test-helper';
 import chai    from 'chai';
 import Manager from '../src/wizards-duel/manager';
+import Spells  from '../src/wizards-duel/spells';
+import Effects from '../src/wizards-duel/effects';
 
 var expect = chai.expect;
 var helper = new Helper('../src/wizards-duel.js');
@@ -9,7 +11,6 @@ var helper = new Helper('../src/wizards-duel.js');
 describe('Manager', () => {
 	var message1 = 'I challenge @bob to a wizards duel!';
 	var message2 = 'I accept @alice\'s challenge';
-	var attackMessage1 = 'madefio!';
 
 	describe('Sending a Challenge', () => {
 		var room;
@@ -92,6 +93,66 @@ describe('Manager', () => {
 			var duelKey = Manager.getDuelKey('alice', 'bob');
 
 			expect(room.robot.brain.data._private[duelKey]).to.eql(Manager.STATUS_DUELING);
+		});
+
+	});
+
+	describe('First attack applies effects and sets turn to next player', () => {
+		var room;
+		var firstPlayer;
+		var secondPlayer;
+		var spellIncantation = 'attack 1 incantation';
+		var spellEffect = 'attack-1-effect';
+		var attackMessage1 = spellIncantation + '!';
+
+		before((done) => {
+			Effects.create(spellEffect, {});
+			Spells.create({
+				incantation: spellIncantation,
+				effects: [ spellEffect ],
+				hitModifier: 100, // Make sure we're guaranteed a hit
+			});
+
+			room = helper.createRoom();
+			room.user.say('alice', message1).then(() => {
+				room.user.say('bob', message2).then(() => {
+					var turnKey = Manager.getTurnKey('alice', 'bob');
+					var turnData = room.robot.brain.data._private[turnKey];
+					firstPlayer = turnData.player;
+					secondPlayer = (firstPlayer === 'alice') ? 'bob' : 'alice';
+
+					room.user.say(firstPlayer, attackMessage1).then(() => {
+						done();
+					});
+				});
+			});
+		});
+
+		after(() => {
+			room.destroy();
+		});
+
+		it('handles spell incantations', () => {
+			var expectedLast2Messages = [
+				[firstPlayer, attackMessage1],
+				['hubot',
+					`@${firstPlayer} casts _${spellIncantation}_ on @${secondPlayer}. ` +
+					`_${spellIncantation}_ adds ${spellEffect} to @${secondPlayer}. `
+				],
+				['hubot',
+					`@${secondPlayer}, it is now the beginning of your turn.`
+				],
+			];
+
+			var last3Messages = [
+				room.messages[room.messages.length - 3],
+				room.messages[room.messages.length - 2],
+				room.messages[room.messages.length - 1],
+			];
+			expect(last3Messages).to.deep.eql(expectedLast2Messages);
+
+			var secondPlayerState = room.robot.brain.data._private[Manager.getPlayerStateKey(secondPlayer)];
+			expect(secondPlayerState.effects).to.have.members([ spellEffect ]);
 		});
 
 	});

@@ -128,7 +128,7 @@ describe('Player', () => {
 		expect(manager.output.messages).to.deep.eql([
 			{
 				type: OutputBuffer.MESSAGE_SEND,
-				content: '@alice casts bobbify.  ',
+				content: '@alice casts _bobbify_. ',
 			}
 		]);
 	});
@@ -144,7 +144,7 @@ describe('Player', () => {
 		expect(manager.output.messages).to.deep.eql([
 			{
 				type: OutputBuffer.MESSAGE_SEND,
-				content: '@alice fails to cast bobbify.',
+				content: '@alice fails to cast _bobbify_.',
 			}
 		]);
 

@@ -92,12 +92,13 @@ class Player {
 				if (onSelf || this.spellHitTarget(spell)) {
 					this.output.startSend();
 
-					spell.cast(this.manager, this, onSelf);
-
-					this.output.append(`@${this.state.name} casts ${spell.incantation}`);
+					this.output.append(`@${this.state.name} casts _${spell.incantation}_`);
 					if (!onSelf)
 						this.output.append(` on @${this.state.opponent}`);
-					this.output.append('.  ');
+					this.output.append('. ');
+
+					spell.cast(this.manager, this, onSelf);
+
 					this.output.append(spell.getNarration(onSelf ? this.state.name : this.state.opponent));
 
 					spell.onHitTarget(this.manager, onSelf ? this : new Player(this.manager, this.state.opponent), onSelf);
@@ -111,7 +112,7 @@ class Player {
 			else if (spell.onFailure)
 				spell.onFailure(this.manager, this, onSelf);
 			else
-				this.output.send(`@${this.state.name} fails to cast ${spell.incantation}.`);
+				this.output.send(`@${this.state.name} fails to cast _${spell.incantation}_.`);
 
 			return succeeded;
 		}
@@ -127,7 +128,7 @@ class Player {
 		var accuracy = clamp(playerState.turnAccuracy, MIN_ACCURACY, MAX_ACCURACY) - clamp(playerState.turnPain, MIN_PAIN, MAX_PAIN);
 		var evasion  = clamp(opponentState.turnEvasion, MIN_EVASION, MAX_EVASION) - clamp(opponentState.turnPain, MIN_PAIN, MAX_PAIN);
 
-		var chanceToHit = ((accuracy - evasion) / accuracy);
+		var chanceToHit = ((accuracy - evasion) / accuracy) + (spell.hitModifier / 100);
 		if (chanceToHit <= 0)
 			return false;
 		else if (Math.random() > chanceToHit)

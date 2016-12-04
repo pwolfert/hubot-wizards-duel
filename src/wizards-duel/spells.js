@@ -138,7 +138,10 @@ var Spells = {
 	 * Only used for testing
 	 */
 	create(config) {
-		return new Spell(config);
+		var spell = new Spell(config);
+		spells.push(spell);
+		this.each = _.partial(_.each, spells);
+		return spell;
 	},
 
 };
