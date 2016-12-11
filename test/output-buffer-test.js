@@ -107,7 +107,7 @@ describe('OutputBuffer', () => {
 		outputBuffer.send(messages[2]);
 		outputBuffer.flush();
 
-		expect(sendSpy.callCount).to.eql(2);
+		expect(sendSpy.callCount).to.eql(1);
 		expect(replySpy.callCount).to.eql(1);
 	});
 

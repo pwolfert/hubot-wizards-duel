@@ -10,13 +10,28 @@ class OutputBuffer {
 
 	flush() {
 		this.endMessage();
-		
+
+		// Hubot's send and reply functions are asychronous, which
+		//   means if I call them multiple times, my messages aren't
+		//   guaranteed to be in order, so I need to send them as
+		//   arrays to assure correct order.
+		var sends = [];
+		var replies = [];
+
 		for (let message of this.messages) {
 			if (message.type === MESSAGE_SEND)
-				this.response.send(message.content);
+				sends.push(message.content);
 			else
-				this.response.reply(message.content);
+				replies.push(message.content);
 		}
+		sends.reverse();
+console.log(sends);
+// console.log(this.messages);
+		if (sends.length)
+			this.response.send(...sends);
+
+		if (replies.length)
+			this.response.reply(...replies);
 
 		this.messages = [];
 	}
@@ -50,7 +65,8 @@ class OutputBuffer {
 
 	endMessage() {
 		if (this.runningMessage) {
-			this.messages.push(this.runningMessage);
+			if (this.runningMessage.content)
+				this.messages.push(this.runningMessage);
 			this.runningMessage = null;
 		}
 	}
