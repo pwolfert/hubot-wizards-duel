@@ -25,8 +25,8 @@ class OutputBuffer {
 				replies.push(message.content);
 		}
 		sends.reverse();
-console.log(sends);
-// console.log(this.messages);
+		// console.log(sends);
+		// console.log(this.messages);
 		if (sends.length)
 			this.response.send(...sends);
 

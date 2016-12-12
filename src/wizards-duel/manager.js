@@ -72,14 +72,7 @@ class Manager {
 
 		// Listen for spell-list requests
 		this.hear(/list spells/i, (res) => {
-			var spellNames = Spells.spells.map((spell) => {
-				return `  - _${spell.incantation}_`;
-			});
-
-			this.output.send([
-				'Spells: ',
-				spellNames.join('\n'),
-			].join('\n'));
+			this.output.send(this.getSpellsList());
 		});
 
 		// Listen for effects-list requests
@@ -187,6 +180,26 @@ class Manager {
 
 	setGlobalEffects(challenger, challengee, effects) {
 		this.brain.set(this.getGlobalEffectsKey(challenger, challengee), effects);
+	}
+
+	static getKnownSpellsKey(roomId) {
+		return `known-effects:${roomId}`;
+	}
+
+	getKnownSpells() {
+		var roomId = this.output.response.message.room;
+		var knownSpells = this.brain.get(Manager.getKnownSpellsKey(roomId));
+		if (knownSpells)
+			return knownSpells;
+		else
+			return [];
+	}
+
+	addKnownSpell(spell) {
+		var roomId = this.output.response.message.room;
+		var spells = this.getKnownSpells();
+		SetFunctions.add(spells, spell.incantation);
+		this.brain.set(Manager.getKnownSpellsKey(roomId), spells);
 	}
 
 	static getTurnKey(challenger, challengee) {
@@ -324,7 +337,11 @@ class Manager {
 				else
 					player.state.numFailures++;
 
+				// Save the player state
 				player.save();
+
+				// Add this spell to our list of known spells
+				this.addKnownSpell(spell);
 
 				// If this was the attack turn, start the opponent's passive turn
 				if (turn.attack) {
@@ -361,6 +378,22 @@ class Manager {
 			'    - To surrender, type "I yield to @[opponent\'s name]."',
 			'    - For a more complete guide, visit pwolfert.github.io/hubot-wizards-duel',
 			'```',
+		].join('\n');
+	}
+
+	getSpellsList() {
+		var knownSpells = this.getKnownSpells();
+
+		var incantations = Spells.spells.map((spell) => {
+			var output = `  - _${spell.incantation}_`;
+			if (knownSpells.includes(spell.incantation))
+				output += ` - ${spell.description}`;
+			return output;
+		});
+
+		return [
+			'Spells: ',
+			incantations.join('\n'),
 		].join('\n');
 	}
 

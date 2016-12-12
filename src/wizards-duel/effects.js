@@ -92,7 +92,7 @@ var effectConfigs = {
 	'fog': {
 		modifiers: [
 			[ 'turnAccuracy', '-=', 30, 'has difficulty aiming and avoiding shots' ],
-			[ 'turnEvasion',  '-=', 15, ],
+			[ 'turnEvasion',  '-=', 15 ],
 		],
 	},
 	'sunlight': {
@@ -196,7 +196,7 @@ var effectConfigs = {
 					[ 'turnSpellcasting', '-=', 5, 'is distracted by the small prey' ],
 				],
 			},
-		]
+		],
 	},
 	'elephant-form': {
 		removes: [ /* other animal forms */ ],
@@ -207,10 +207,10 @@ var effectConfigs = {
 					onEitherPlayer: true,
 				},
 				modifiers: [
-					'fear'
+					'fear',
 				],
 			},
-		]
+		],
 	},
 	'marionette': {},
 
@@ -304,7 +304,7 @@ var effectConfigs = {
  */
 var Effects = {
 
-	effects: _.mapObject(effectConfigs, function(effect, effectName) {
+	effects: _.mapValues(effectConfigs, function(effect, effectName) {
 		return new Effect(effectName, effect);
 	}),
 

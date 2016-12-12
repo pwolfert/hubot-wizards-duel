@@ -31,6 +31,7 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'fabrisio',
+		description: 'creates an overpowering fragrance',
 		effects: [ 'fragrance' ],
 	},
 	{
