@@ -385,10 +385,10 @@ class Manager {
 		var knownSpells = this.getKnownSpells();
 
 		var incantations = Spells.spells.map((spell) => {
-			var output = `  - _${spell.incantation}_`;
 			if (knownSpells.includes(spell.incantation))
-				output += ` - ${spell.description}`;
-			return output;
+				return `  - _*${spell.incantation}*_ - ${spell.description}`
+			else
+				return `  - _${spell.incantation}_`;
 		});
 
 		return [
