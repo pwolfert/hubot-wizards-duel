@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import _ from 'lodash';
 import oxfordJoin from 'oxford-join';
 import clamp from 'clamp';
 import Effects from './effects';
@@ -201,9 +201,9 @@ class Player {
 		return modifiedPlayerState;
 	}
 
-	static getEffectsExplanation(manager, playerState) {
+	getEffectsExplanation() {
 		// Calls the same modification functions as getAffectedPlayerState but in verbose mode
-		Player.getAffectedPlayerState(manager, playerState, true, true);
+		Player.getAffectedPlayerState(this.manager, this.state, true, true);
 	}
 
 	static getActiveEffects(playerState) {

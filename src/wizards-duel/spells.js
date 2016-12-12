@@ -1,4 +1,4 @@
-import _ from 'underscore';
+import _ from 'lodash';
 import Player from './player';
 import Spell from './spell';
 import Effects from './effects';

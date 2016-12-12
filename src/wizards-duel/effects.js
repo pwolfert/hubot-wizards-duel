@@ -1,4 +1,4 @@
-import _            from 'underscore';
+import _            from 'lodash';
 import oxfordJoin   from 'oxford-join';
 import Spells       from './spells';
 import Player       from './player';

@@ -5,7 +5,7 @@ import Effects      from '../src/wizards-duel/effects.js';
 import OutputBuffer from '../src/wizards-duel/output-buffer.js';
 import sinon        from 'sinon';
 import 'sinon-chai';
-import _ from 'underscore'
+import _ from 'lodash'
 var expect = chai.expect;
 
 describe('Effects', () => {

@@ -1,4 +1,4 @@
-import _            from 'underscore';
+import _            from 'lodash';
 import oxfordJoin   from 'oxford-join';
 import SetFunctions from './set';
 import Effects      from './effects';

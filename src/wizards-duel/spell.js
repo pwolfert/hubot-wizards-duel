@@ -1,4 +1,4 @@
-import _          from 'underscore';
+import _          from 'lodash';
 import oxfordJoin from 'oxford-join';
 import Player     from './player';
 import Effects    from './effects';
@@ -71,6 +71,7 @@ export default class Spell {
 	cast(manager, player, onSelf) {
 		var i;
 		var target = onSelf ? player : new Player(manager, player.state.opponent);
+		var oldEffects = target.effects.slice();
 
 		// Add effects as appropriate
 		if (this.effects.length) {
@@ -99,6 +100,10 @@ export default class Spell {
 		// If it's the opponent, we need to save
 		if (!onSelf)
 			target.save();
+
+		// Narrate the effects if they changed
+		if (_.xor(oldEffects, target.effects.slice()).length)
+			target.getEffectsExplanation();
 	}
 
 	onHitTarget(manager, player, onSelf) {
