@@ -62,6 +62,12 @@ export default class Spell {
 		return 0;
 	}
 
+	get isGlobal() {
+		if (this.spell.isGlobal)
+			return this.spell.isGlobal;
+		return false;
+	}
+
 	cast(manager, player, onSelf) {
 		var i;
 		var target = onSelf ? player : new Player(manager, player.state.opponent);

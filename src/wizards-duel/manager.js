@@ -93,6 +93,11 @@ class Manager {
 			);
 		});
 
+		this.robot.hear(/hey hey hey/i, (res) => {
+			// res.send('message 1', 'message 2  jkfjel jkwe fke ', 'message 3', 'message 4 ------ 1-1- -22-3-3--1-ief-e-e');
+			res.send('message 4', 'message 3', 'message 2', 'message 1');
+		});
+
 		// Duelbot, what's your story? --I was made to serve at the arena
 		// What's the arena? --a place built by my master for wizards to duel
 		// Who built the arena? --the wizard who built me
@@ -170,6 +175,18 @@ class Manager {
 
 	resetPlayerStateTurnVars(name) {
 
+	}
+
+	static getGlobalEffectsKey(challenger, challengee) {
+		return `global-effects:${challenger}-${challengee}`;
+	}
+
+	getGlobalEffects(challenger, challengee) {
+		return this.brain.get(this.getGlobalEffectsKey(challenger, challengee));
+	}
+
+	setGlobalEffects(challenger, challengee, effects) {
+		this.brain.set(this.getGlobalEffectsKey(challenger, challengee), effects);
 	}
 
 	static getTurnKey(challenger, challengee) {

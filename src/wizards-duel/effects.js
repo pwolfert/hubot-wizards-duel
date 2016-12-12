@@ -22,10 +22,10 @@ var effectConfigs = {
 		counteracts: [ 'fog' ],
 		counteredBy: [], // I haven't yet decided if I want this, but it would make it easier to write configs some cases even if it's redundant
 		modifiers: [
-			[ 'turnSpellcasting', '+=', 10, 'makes it easier to think' ],
-			[ 'turnAccuracy',     '-=', 20, 'makes it difficult to see' ],
-			[ 'turnEvasion',      '+=', 10, 'makes it easier to move' ],
-			[ 'turnShield',       '+=', 10, 'provides a minor magical shield' ],
+			[ 'turnSpellcasting', '+=', 10, 'has an easier time thinking' ],
+			[ 'turnAccuracy',     '-=', 20, 'has difficulty seeing' ],
+			[ 'turnEvasion',      '+=', 10, 'moves with greater ease' ],
+			[ 'turnShield',       '+=', 10, 'is provided with a minor magical shield' ],
 		],
 		synergies: [
 			{
@@ -33,7 +33,7 @@ var effectConfigs = {
 					or: [ 'cold' ],
 				},
 				modifiers: [
-					[ 'turnPain', '+=', 10, 'combined with @effect makes it slightly painful' ],
+					[ 'turnPain', '+=', 10, 'is in slight pain from cold' ],
 				],
 			},
 			{
@@ -41,7 +41,7 @@ var effectConfigs = {
 					and: [ 'fire', 'tar' ],
 				},
 				modifiers: [
-					[ 'turnPain', '+=', 10, 'combined with fire and tar makes it slightly painful' ],
+					[ 'turnPain', '+=', 10, 'is in pain from burning' ],
 				],
 			},
 			{
@@ -49,7 +49,7 @@ var effectConfigs = {
 					each: [ 'styrofoam', 'hay' ],
 				},
 				modifiers: [
-					[ 'turnPain', '+=', 10, 'combined with flammable materials makes it slightly painful' ],
+					[ 'turnPain', '+=', 10, 'is in pain from burning' ],
 				],
 			},
 		],
@@ -91,8 +91,8 @@ var effectConfigs = {
 	},
 	'fog': {
 		modifiers: [
-			[ 'turnAccuracy', '-=', 30, 'makes it difficult to see' ],
-			[ 'turnEvasion',  '-=', 15, 'makes it difficult to see' ],
+			[ 'turnAccuracy', '-=', 30, 'has difficulty aiming and avoiding shots' ],
+			[ 'turnEvasion',  '-=', 15, ],
 		],
 	},
 	'sunlight': {
@@ -110,14 +110,14 @@ var effectConfigs = {
 		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
 		modifiers: [
-			[ 'turnSpellcasting', '-=', 20, 'makes it difficult to speak' ],
+			[ 'turnSpellcasting', '-=', 20, 'has difficulty speaking' ],
 		],
 	},
 	'stench': {
 		noun: 'stench',
 		counteracts: [ 'fragrance' ],
 		modifiers: [
-			[ 'turnSpellcasting', '-=', 10, 'makes it difficult to concentrate' ],
+			[ 'turnSpellcasting', '-=', 10, 'has difficulty concentrating' ],
 		],
 	},
 	'fragrance': {
@@ -127,15 +127,20 @@ var effectConfigs = {
 	'large-nose': {
 		noun: 'enlarged nose',
 		negates: [ 'small-nose' ],
-		modify: function(manager, playerState, isDefense) {
-			var opponent = new Player(manager, playerState.opponent);
-			if (playerState.effects.includes('stench') || opponent.state.effects.includes('stench')) {
-				// If the effect is on us this applies the effect again, which
-				//   effectively doubles it.  If the effect is on the opponent,
-				//   we want it now applied to us as well.
-				Effects.get('stench').modify(manager, playerState, isDefense);
-			}
-		},
+		synergies: [
+			{
+				effects: {
+					each: [ 'stench', 'bowel-stench' ],
+					onEitherPlayer: true,
+				},
+				modifiers: [
+					// If the effect is on us this applies the effect again, which
+					//   effectively doubles it.  If the effect is on the opponent,
+					//   we want it now applied to us as well.
+					'stench',
+				],
+			},
+		],
 	},
 	'small-nose': {
 		counteracts: [ 'stench', 'fragrance', 'bowel-stench' ],
@@ -145,10 +150,30 @@ var effectConfigs = {
 		// added wisdom, destroyed by fire and hairloss
 		isFlammable: true,
 	},
-	'bowel-slickery': {},
-	'bowel-stench': {},
-	'small-feet': {},
-	'tiny-feet': {},
+	'bowel-slickery': {
+		noun: 'bowel slickery',
+		modifiers: [
+			[ 'turnEvasion', '+=', 5, 'has lubricated legs' ],
+		],
+	},
+	'bowel-stench': {
+		modifiers: [ 'stench' ],
+	},
+	'small-feet': {
+		noun: 'small feet',
+		negates: [ 'large feet' ],
+		modifiers: [
+			[ 'turnEvasion', '-=', 10, 'moves with greater difficulty' ],
+		],
+	},
+	'tiny-feet': {
+		noun: 'tiny feet',
+		negates: [ 'large feet' ],
+		removes: [ 'small-feet' ],
+		modifiers: [
+			[ 'turnEvasion', '-=', 30, 'cannot stand' ],
+		],
+	},
 	'swollen-tongue': {},
 	'swollen-eyes': {},
 	'wings': {
@@ -157,7 +182,37 @@ var effectConfigs = {
 	'bat-ears': {},
 	'noodle-arms': {},
 	'skin-irritation': {},
-
+	'eagle-head': {
+		modifiers: [
+			[ 'turnAccuracy', '+=', 10, 'has eagle vision' ],
+		],
+		synergies: [
+			{
+				effects: {
+					each: [ 'mice', 'rats', 'snakes' ],
+					onEitherPlayer: true,
+				},
+				modifiers: [
+					[ 'turnSpellcasting', '-=', 5, 'is distracted by the small prey' ],
+				],
+			},
+		]
+	},
+	'elephant-form': {
+		removes: [ /* other animal forms */ ],
+		synergies: [
+			{
+				effects: {
+					or: [ 'mice' ],
+					onEitherPlayer: true,
+				},
+				modifiers: [
+					'fear'
+				],
+			},
+		]
+	},
+	'marionette': {},
 
 	// MENTAL
 	// -------------------------------------------------------------------------
@@ -194,31 +249,32 @@ var effectConfigs = {
 			}
 		},
 	},
-	'marionette': {},
+	'fear-of-snakes': {},
+	'fear-of-rats': {},
 
 
 	// CREATURE
 	// -------------------------------------------------------------------------
 	'brain-parasite': {},
 	'friendly-bard': {
-		modifiers: [ [ 'turnPain', '-=', 10, 'makes the pain of this world a little easier to bear' ] ],
+		modifiers: [ [ 'turnPain', '-=', 10, 'can bear the pain of this world a little better' ] ],
 	},
 	'unfriendly-bard': {
-		modifiers: [ [ 'turnPain', '+=', 10, 'is painful to hear' ] ],
+		modifiers: [ [ 'turnPain', '+=', 10, 'feels worse' ] ],
 	},
 
 
 	// PROTECTION / BUFFS
 	// ---------------------------------------------------------------------------
 	'magic-shield-10': {
-		modifiers: [ [ 'turnShield', '+=', 10, 'provides a minor magical shield' ] ],
+		modifiers: [ [ 'turnShield', '+=', 10, 'is provided with a minor magical shield' ] ],
 	},
 	'magic-shield-20': {
-		modifiers: [ [ 'turnShield', '+=', 20, 'provides a decent magical shield' ] ],
+		modifiers: [ [ 'turnShield', '+=', 20, 'is provided with a decent magical shield' ] ],
 		removes: [ 'magic-shield-10' ],
 	},
 	'magic-shield-30': {
-		modifiers: [ [ 'turnShield', '+=', 30, 'provides a good magical shield' ] ],
+		modifiers: [ [ 'turnShield', '+=', 30, 'is provided with a good magical shield' ] ],
 		removes: [ 'magic-shield-20' ],
 	},
 	'levitation': {

@@ -191,14 +191,19 @@ class Player {
 		}
 	}
 
-	static getAffectedPlayerState(manager, playerState, isDefense) {
+	static getAffectedPlayerState(manager, playerState, isDefense, verbose) {
 		var modifiedPlayerState = _.extend({}, playerState);
 		var activeEffects = Player.getActiveEffects(playerState);
 
 		for (let effectName of activeEffects)
-			Effects.get(effectName).modify(manager, modifiedPlayerState, isDefense);
+			Effects.get(effectName).modify(manager, modifiedPlayerState, isDefense, verbose);
 
 		return modifiedPlayerState;
+	}
+
+	static getEffectsExplanation(manager, playerState) {
+		// Calls the same modification functions as getAffectedPlayerState but in verbose mode
+		Player.getAffectedPlayerState(manager, playerState, true, true);
 	}
 
 	static getActiveEffects(playerState) {

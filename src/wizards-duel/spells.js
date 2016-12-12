@@ -113,6 +113,51 @@ var spellConfigs = [
 			}
 		},
 	},
+	{
+		incantation: 'TODO: BLIZZARD',
+		description: 'arena-wide blizzard',
+	},
+	{
+		incantation: 'TODO: LITTLE BLIZZARD',
+		description: 'local blizzard over player',
+		baseSuccessRate: 0.75,
+		hitModifier: -5,
+	},
+	{
+		incantation: 'TODO: RAINSTORM',
+		description: 'arena-wide rainstorm',
+	},
+	{
+		incantation: 'TODO: LITTLE BLACK RAIN CLOUD',
+		description: 'local rain over player',
+		baseSuccessRate: 0.75,
+		hitModifier: -5,
+	},
+	{
+		incantation: 'TODO: THUNDERSTORM',
+		description: 'arena-wide thunderstorm',
+	},
+	{
+		incantation: 'TODO: LIGHTNING BOLT',
+		description: 'single bolt of lightning',
+		baseSuccessRate: 0.75,
+		hitModifier: -5,
+	},
+	{
+		incantation: 'TODO: UPSIDE-DOWN VISION',
+		description: 'turns vision upside down',
+		baseSuccessRate: 0.5,
+	},
+	{
+		incantation: 'TODO: MER-TAIL',
+		description: 'gives player a mer-tail',
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'TODO: METAL CAGE',
+		description: 'drops a metal cage around player',
+		baseSuccessRate: 0.75,
+	},
 ];
 
 

@@ -1,3 +1,4 @@
+import Effects from './effects';
 
 /**
  * Class for effect instances that wraps some standard functionality around the
@@ -35,11 +36,14 @@ export default class Effect {
 		return [];
 	}
 
-	modify(manager, playerState, isDefense) {
+	modify(manager, playerState, isDefense, verbose) {
 		// Apply listed modifiers
 		if (this.effect.modifiers) {
-			for (let modifier of this.effect.modifiers)
-				this.applyModifier(playerState, modifier);
+			for (let modifier of this.effect.modifiers) {
+				let narrations = this.applyModifier(manager, playerState, modifier);
+				if (narrations.length && verbose)
+					manager.output.append(`Because of ${this.noun}, @${playerState.name} ${oxfordJoin(narrations)}. `);
+			}
 		}
 
 		// Look for synergies
@@ -47,12 +51,24 @@ export default class Effect {
 			for (let synergy of this.effect.synergies) {
 				var conditionsMet;
 
+				// Find out what our pool of effects is
+				var effects;
+				if (synergy.effects.onOpponent)
+					effects = manager.getPlayerState(playerState.opponent).effects;
+				else if (synergy.effects.onEitherPlayer)
+					effects = manager.getPlayerState(playerState.opponent).effects.concat(playerState.effects);
+				else
+					effects = playerState.effects;
+
+				// List of affects that were present and applicable
+				var applicableEffects = [];
+
 				if (synergy.effects.or) {
 					conditionsMet = false;
 					for (let effectName of synergy.effects.or) {
-						if (playerState.effects.includes(effectName)) {
+						if (effects.includes(effectName)) {
 							conditionsMet = true;
-							break;
+							applicableEffects.push(effectName);
 						}
 					}
 				}
@@ -60,8 +76,10 @@ export default class Effect {
 					conditionsMet = true;
 
 				if (synergy.effects.and) {
-					for (let effectName of synergy.effects.and)
-						conditionsMet &= playerState.effects.includes(effectName);
+					for (let effectName of synergy.effects.and) {
+						conditionsMet &= effects.includes(effectName);
+						applicableEffects.push(effectName);
+					}
 				}
 
 				if (conditionsMet) {
@@ -70,16 +88,35 @@ export default class Effect {
 					if (synergy.effects.each) {
 						numTimesToApply = 0;
 						for (let effectName of synergy.effects.each) {
-							if (playerState.effects.includes(effectName))
+							if (effects.includes(effectName))
 								numTimesToApply++;
 						}
 					}
 					else
 						numTimesToApply = 1;
 
+					if (verbose) {
+						var nouns = Effects.getNouns(applicableEffects);
+						manager.output.append(`Because of the ${this.noun} and the presence of ${oxfordJoin(nouns)}, @${playerState.name} `);
+					}
+
+					let narrations = [];
+					let modifierNarrations;
+					let didCollectNarrations = false;
 					for (let i = 0; i < numTimesToApply; i++) {
-						for (let modifier of synergy.modifiers)
-							this.applyModifier(playerState, modifier);
+						for (let modifier of synergy.modifiers) {
+							modifierNarrations = this.applyModifier(manager, playerState, modifier);
+							if (verbose && !didCollectNarrations)
+								narrations.push(modifierNarrations);
+						}
+						didCollectNarrations = true;
+					}
+
+					if (verbose) {
+						manager.output.append(oxfordJoin(narrations));
+						if (numTimesToApply > 1)
+							manager.output.append(`(x${numTimesToApply})`);
+						manager.output.append('.');
 					}
 				}
 			}
@@ -90,27 +127,52 @@ export default class Effect {
 			this.effect.modify.apply(this, arguments);
 	}
 
+	/**
+	 * Applies the modifier to the playerState and returns a narration
+	 */
 	applyModifier(playerState, modifier) {
-		var property = modifier[0];
-		var operator = modifier[1];
-		var operand = modifier[2];
-		switch (operator) {
-			case '*=':
-				playerState[property] *= operand;
-				break;
-			case '/=':
-				playerState[property] /= operand;
-				break;
-			case '+=':
-				playerState[property] += operand;
-				break;
-			case '-=':
-				playerState[property] -= operand;
-				break;
-			case '=':
-				playerState[property] = operand;
-				break;
+		var narrations = [];
+
+		if (Array.isArray(modifier)) {
+			var property  = modifier[0];
+			var operator  = modifier[1];
+			var operand   = modifier[2];
+			var narration = modifier[3];
+
+			switch (operator) {
+				case '*=':
+					playerState[property] *= operand;
+					break;
+				case '/=':
+					playerState[property] /= operand;
+					break;
+				case '+=':
+					playerState[property] += operand;
+					break;
+				case '-=':
+					playerState[property] -= operand;
+					break;
+				case '=':
+					playerState[property] = operand;
+					break;
+			}
+
+			if (narration)
+				narrations.push(narration);
 		}
+		else if (typeof modifier === 'string') {
+			// It's the name of another effect; just take its direct modifiers
+			var effect = Effects.get(modifier);
+			if (effect.modifiers) {
+				for (let effectModifier of effect.modifiers)
+					narrations = narrations.concat(this.applyModifier(playerState, effectModifier));
+			}
+		}
+		else {
+			throw new Error('Bad modifier passed to Effect.applyModifiers: ', modifier);
+		}
+
+		return narrations;
 	}
 
 	inverselyApplyModifier(playerState, modifier) {
