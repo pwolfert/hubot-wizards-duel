@@ -38,7 +38,7 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'oppugno gelato',
-		description: 'conjures a localized blizzard over a combatant',
+		description: 'conjures a localized blizzard over the target',
 		baseSuccessRate: 0.75,
 		hitModifier: -5,
 		effects: [ 'blizzard' ],
@@ -50,7 +50,7 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'nimbus polus',
-		description: 'conjures localized rain over a combatant',
+		description: 'conjures localized rain over the target',
 		baseSuccessRate: 0.75,
 		hitModifier: -5,
 		effects: [ 'rain' ],
@@ -69,7 +69,7 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'nebulo',
-		description: 'wraps combatant in a thick fog',
+		description: 'wraps the target in a thick fog',
 		effects: [ 'fog' ],
 	},
 
@@ -121,7 +121,7 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'sirenio',
-		description: 'gives combatant a mer-tail',
+		description: 'gives the target a mer-tail',
 		baseSuccessRate: 0.75,
 		effects: [ 'mer-tail' ],
 	},
@@ -215,6 +215,11 @@ var spellConfigs = [
 		effects: [ 'crows' ],
 	},
 	{
+		incantation: 'evoco herpestes',
+		description: 'summons a mongoose',
+		effects: [ 'mongoose' ],
+	},
+	{
 		incantation: 'taenia solium',
 		description: 'summons a brain parasite',
 		effects: [ 'brain-parasite' ],
@@ -230,19 +235,19 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'clostrumagia',
-		description: 'provided with a minor magical shield',
+		description: 'provides target with a minor magical shield',
 		effects: [ 'magic-shield-10' ],
 		baseSuccessRate: 0.75,
 	},
 	{
 		incantation: 'clostrumagia magna',
-		description: 'provided with a decent magical shield',
+		description: 'provides target with a decent magical shield',
 		effects: [ 'magic-shield-20' ],
 		baseSuccessRate: 0.50,
 	},
 	{
 		incantation: 'clostrumagia maxima',
-		description: 'provided with a good magical shield',
+		description: 'provides target with a good magical shield',
 		effects: [ 'magic-shield-30' ],
 		baseSuccessRate: 0.25,
 	},
@@ -261,7 +266,7 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'cavea metallica',
-		description: 'drops a heavy metal cage around a combatant',
+		description: 'drops a heavy metal cage around the target',
 		baseSuccessRate: 0.75,
 	},
 ];

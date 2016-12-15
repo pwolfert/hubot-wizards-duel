@@ -95,7 +95,7 @@ class Player {
 					this.output.append(`@${this.state.name} casts _${spell.incantation}_`);
 					if (!onSelf)
 						this.output.append(` on @${this.state.opponent}`);
-					this.output.append('. ');
+					this.output.append(`, which ${spell.description}. `);
 
 					spell.cast(this.manager, this, onSelf);
 
@@ -106,7 +106,7 @@ class Player {
 					this.output.endSend();
 				}
 				else {
-					this.output.send(`@${this.state.name} fails to hit his target.`);
+					this.output.send(`@${this.state.name} casts _${spell.incantation}_ but fails to hit @${this.state.opponent}.`);
 				}
 			}
 			else if (spell.onFailure)

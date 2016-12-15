@@ -25,7 +25,10 @@ export default class Spell {
 	}
 
 	get description() {
-		return this.spell.description;
+		if (this.spell.description)
+			return this.spell.description;
+		else
+			return 'DOES NOT HAVE A DESCRIPTION';
 	}
 
 	get narration() {
@@ -75,8 +78,8 @@ export default class Spell {
 
 		// Add effects as appropriate
 		if (this.effects.length) {
-			var nouns = Effects.getNouns(this.effects);
-			manager.output.append(`_${this.incantation}_ adds ${oxfordJoin(nouns)} to @${target.state.name}. `);
+			// var nouns = Effects.getNouns(this.effects);
+			// manager.output.append(`_${this.incantation}_ adds ${oxfordJoin(nouns)} to @${target.state.name}. `);
 
 			for (i = 0; i < this.effects.length; i++)
 				target.addEffect(this.effects[i]);
@@ -84,8 +87,8 @@ export default class Spell {
 
 		// Remove effects as appropriate
 		if (this.removedEffects.length) {
-			nouns = Effects.getNouns(this.removedEffects);
-			manager.output.append(`_${this.incantation}_ removes ${oxfordJoin(nouns)} to @${target.state.name}. `);
+			// nouns = Effects.getNouns(this.removedEffects);
+			// manager.output.append(`_${this.incantation}_ removes ${oxfordJoin(nouns)} from @${target.state.name}. `);
 
 			for (i = 0; i < this.removedEffects.length; i++) {
 				if (target.state.effects.includes(this.removedEffects[i]))

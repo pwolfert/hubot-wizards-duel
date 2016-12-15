@@ -119,10 +119,13 @@ var effectConfigs = {
 
 	// BODY
 	// -------------------------------------------------------------------------
-	'hairless': {},
+	'hairless': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
 	'frog-vomitting': {
 		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		isIllness: true,
 		modifiers: [
 			[ 'turnSpellcasting', '-=', 20, 'has difficulty speaking' ],
@@ -130,6 +133,7 @@ var effectConfigs = {
 	},
 	'stench': {
 		noun: 'stench',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		counteracts: [ 'fragrance' ],
 		modifiers: [
 			[ 'turnSpellcasting', '-=', 10, 'has difficulty concentrating' ],
@@ -137,10 +141,12 @@ var effectConfigs = {
 	},
 	'fragrance': {
 		noun: 'fragrance',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		counteracts: [ 'stench' ],
 	},
 	'large-nose': {
 		noun: 'enlarged nose',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'small-nose' ],
 		synergies: [
 			{
@@ -158,26 +164,31 @@ var effectConfigs = {
 		],
 	},
 	'small-nose': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		counteracts: [ 'stench', 'fragrance', 'bowel-stench' ],
 		negates: [ 'large-nose' ],
 	},
 	'merlins-beard': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		// added wisdom, destroyed by fire and hairloss
 		isFlammable: true,
 	},
 	'bowel-slickery': {
 		noun: 'bowel slickery',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		isIllness: true,
 		modifiers: [
 			[ 'turnEvasion', '+=', 5, 'has lubricated legs' ],
 		],
 	},
 	'bowel-stench': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		isIllness: true,
 		modifiers: [ 'stench' ],
 	},
 	'small-feet': {
 		noun: 'small feet',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'large feet' ],
 		modifiers: [
 			[ 'turnEvasion', '-=', 10, 'moves with greater difficulty' ],
@@ -185,23 +196,35 @@ var effectConfigs = {
 	},
 	'tiny-feet': {
 		noun: 'tiny feet',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'large feet' ],
 		removes: [ 'small-feet' ],
 		modifiers: [
 			[ 'turnEvasion', '-=', 30, 'cannot stand' ],
 		],
 	},
-	'swollen-tongue': {},
-	'swollen-eyes': {},
+	'swollen-tongue': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
+	'swollen-eyes': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
 	'wings': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		isFlammable: true,
 	},
-	'bat-ears': {},
-	'noodle-arms': {},
+	'bat-ears': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
+	'noodle-arms': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
 	'skin-irritation': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		isIllness: true,
 	},
 	'eagle-head': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		modifiers: [
 			[ 'turnAccuracy', '+=', 10, 'has eagle vision' ],
 		],
@@ -218,6 +241,7 @@ var effectConfigs = {
 		],
 	},
 	'elephant-form': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		removes: [ /* other animal forms */ ],
 		synergies: [
 			{
@@ -231,8 +255,11 @@ var effectConfigs = {
 			},
 		],
 	},
-	'marionette': {},
+	'marionette': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
 	'mer-tail': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		removes: [ 'small-feet', 'tiny-feet', 'large-feet' ],
 		modifiers: [
 			[ 'turnEvasion', '-=', 20, 'cannot move effectively on land' ],
@@ -253,6 +280,7 @@ var effectConfigs = {
 	// MENTAL
 	// -------------------------------------------------------------------------
 	'confusion': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'clarity' ],
 		beforeCast: function(manager, player, spell, onSelf) {
 			// 25% chance of casting a completely different spell
@@ -272,9 +300,11 @@ var effectConfigs = {
 		},
 	},
 	'clarity': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'confusion', 'intoxication' ],
 	},
 	'intoxication': { // Spoonerisms
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'clarity' ],
 		beforeCast: function(manager, player, spell, onSelf) {
 			var words = spell.incantation.split(' ');
@@ -286,6 +316,7 @@ var effectConfigs = {
 		},
 	},
 	'phonemic-confusion': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		beforeCast: function(manager, player, spell, onSelf) {
 			var bsReplaced = spell.incantation.replace('b', 'd');
 			if (spell.incantation !== bsReplaced) {
@@ -295,6 +326,7 @@ var effectConfigs = {
 		}
 	},
 	'fear-of-snakes': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		synergies: [
 			{
 				effects: {
@@ -306,6 +338,7 @@ var effectConfigs = {
 		],
 	},
 	'fear-of-rats': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		synergies: [
 			{
 				effects: {
@@ -317,12 +350,14 @@ var effectConfigs = {
 		],
 	},
 	'fear': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		modifiers: [
 			[ 'turnPain', '+=', 10, 'is in mental anguish' ],
 		],
 	},
 	'inverted-vision': {
 		noun: 'inverted vision',
+		determiner: Effect.POSSESSIVE_DETERMINER,
 		modifiers: [
 			[ 'turnAccuracy', '-=', 40, 'is very confused' ],
 			[ 'turnEvasion',  '-=', 10 ],
@@ -332,7 +367,9 @@ var effectConfigs = {
 
 	// CREATURES
 	// -------------------------------------------------------------------------
-	'brain-parasite': {},
+	'brain-parasite': {
+		determiner: Effect.POSSESSIVE_DETERMINER,
+	},
 	'friendly-bard': {
 		modifiers: [ [ 'turnPain', '-=', 10, 'can bear the pain of this world a little better' ] ],
 	},
@@ -354,6 +391,13 @@ var effectConfigs = {
 	'crows': {
 		removes: [ 'spiders', 'termites' ],
 		removalVerb: 'eat',
+	},
+	'mongoose': {
+		noun: 'mongoose',
+		removes: [ 'spiders', 'termites' ],
+		removalVerb: 'eat',
+		negates: [ 'snakes' ],
+		negatingVerb: 'succeeds in but dies fighting',
 	},
 
 
@@ -501,6 +545,8 @@ var Effects = {
 		// Then with all the new effects, see if they negate or remove any existing effects
 		for (let newEffectName of newEffectNames) {
 			var newEffect = Effects.get(newEffectName);
+			var determiner = newEffect.getDeterminer(playerName);
+			var Determiner = determiner.charAt(0).toUpperCase() + determiner.slice(1);
 
 			var negated = this.getNegatedEffects(allEffectNames, newEffectName);
 			if (negated.length) {
@@ -509,7 +555,7 @@ var Effects = {
 					SetFunctions.remove(allEffectNames, negatedEffectName);
 
 				if (output)
-					output.append(`The ${newEffect.noun} negates @${playerName}'s ${oxfordJoin(negated)}. `);
+					output.append(`${Determiner} ${newEffect.noun} ${newEffect.negatingVerb} ${determiner} ${oxfordJoin(negated)}. `);
 			}
 
 			var removed = this.getRemovedEffects(allEffectNames, newEffectName);
@@ -518,13 +564,12 @@ var Effects = {
 				SetFunctions.remove(allEffectNames, removedEffectName);
 
 			if (output) {
-
 				if (removed.length)
-					output.append(`The ${newEffect.noun} ${newEffect.removalVerb} @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
+					output.append(`${Determiner} ${newEffect.noun} ${newEffect.removalVerb} ${determiner} ${oxfordJoin(this.getNouns(removed))}. `);
 
 				var counteracted = this.getCounteractedEffects(allEffectNames, newEffectName);
 				if (counteracted.length)
-					output.append(`The ${newEffect.noun} counteracts @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
+					output.append(`${Determiner} ${newEffect.noun} counteracts ${determiner} ${oxfordJoin(this.getNouns(counteracted))}. `);
 			}
 		}
 

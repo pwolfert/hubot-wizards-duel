@@ -1,10 +1,13 @@
+import _       from 'lodash';
 import Effects from './effects';
+
+const POSSESSIVE_DETERMINER = '_possessive';
 
 /**
  * Class for effect instances that wraps some standard functionality around the
  *   configuration.
  */
-export default class Effect {
+class Effect {
 
 	constructor(name, effectConfig) {
 		this.effect = effectConfig;
@@ -23,6 +26,13 @@ export default class Effect {
 			return this.effect.removalVerb;
 		else
 			return 'removes';
+	}
+
+	get negatingVerb() {
+		if (this.effect.negatingVerb)
+			return this.effect.negatingVerb;
+		else
+			return 'negates';
 	}
 
 	get global() {
@@ -45,6 +55,17 @@ export default class Effect {
 		if (this.effect.counteracts)
 			return this.effect.counteracts;
 		return [];
+	}
+
+	getDeterminer(player) {
+		if (this.effect.determiner) {
+			if (this.effect.determiner === POSSESSIVE_DETERMINER)
+				return `@${player}'s`;
+			else
+				return this.effect.determiner;
+		}
+		else
+			return 'the';
 	}
 
 	modify(manager, playerState, isDefense, verbose) {
@@ -108,7 +129,8 @@ export default class Effect {
 
 					if (verbose) {
 						var nouns = Effects.getNouns(applicableEffects);
-						manager.output.append(`Because of the ${this.noun} and the presence of ${oxfordJoin(nouns)}, @${playerState.name} `);
+						var determiner = this.getDeterminer(playerState.name);
+						manager.output.append(`Because of ${determiner} ${this.noun} and the presence of ${oxfordJoin(nouns)}, @${playerState.name} `);
 					}
 
 					let narrations = [];
@@ -144,7 +166,7 @@ export default class Effect {
 	applyModifier(playerState, modifier) {
 		var narrations = [];
 
-		if (Array.isArray(modifier)) {
+		if (_.isArray(modifier) || _.isObject(modifier)) {
 			var property  = modifier[0];
 			var operator  = modifier[1];
 			var operand   = modifier[2];
@@ -252,3 +274,7 @@ export default class Effect {
 	}
 
 }
+
+Effect.POSSESSIVE_DETERMINER = POSSESSIVE_DETERMINER;
+
+export default Effect;
