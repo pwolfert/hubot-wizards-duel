@@ -85,10 +85,6 @@ var effectConfigs = {
 	'frost': {
 		adjective: 'frozen',
 	},
-	'entangling-roots': {
-		counteracts: [ 'levitation' ],
-		isWood: true,
-	},
 	'fog': {
 		modifiers: [
 			[ 'turnAccuracy', '-=', 30, 'has difficulty aiming and avoiding shots' ],
@@ -101,6 +97,24 @@ var effectConfigs = {
 	'rain': {
 		isWater: true,
 	},
+	'blizzard': {
+
+	},
+	'lightning': {
+		modifiers: [
+			[ 'turnPain', '+=', 20, 'is struck by lightning' ],
+		],
+		synergies: [
+			{
+				effects: {
+					or: [ 'water', 'arena-flood' ],
+				},
+				modifiers: [
+					[ 'turnPain', '+=', 10, 'is more susceptible to lightning strikes' ],
+				],
+			}
+		]
+	},
 
 
 	// BODY
@@ -109,6 +123,7 @@ var effectConfigs = {
 	'frog-vomitting': {
 		noun: 'vomitting up of frogs',
 		adjective: 'vomitting frogs',
+		isIllness: true,
 		modifiers: [
 			[ 'turnSpellcasting', '-=', 20, 'has difficulty speaking' ],
 		],
@@ -152,11 +167,13 @@ var effectConfigs = {
 	},
 	'bowel-slickery': {
 		noun: 'bowel slickery',
+		isIllness: true,
 		modifiers: [
 			[ 'turnEvasion', '+=', 5, 'has lubricated legs' ],
 		],
 	},
 	'bowel-stench': {
+		isIllness: true,
 		modifiers: [ 'stench' ],
 	},
 	'small-feet': {
@@ -181,7 +198,9 @@ var effectConfigs = {
 	},
 	'bat-ears': {},
 	'noodle-arms': {},
-	'skin-irritation': {},
+	'skin-irritation': {
+		isIllness: true,
+	},
 	'eagle-head': {
 		modifiers: [
 			[ 'turnAccuracy', '+=', 10, 'has eagle vision' ],
@@ -213,6 +232,23 @@ var effectConfigs = {
 		],
 	},
 	'marionette': {},
+	'mer-tail': {
+		removes: [ 'small-feet', 'tiny-feet', 'large-feet' ],
+		modifiers: [
+			[ 'turnEvasion', '-=', 20, 'cannot move effectively on land' ],
+		],
+		synergies: [
+			{
+				effects: {
+					or: [ 'flood-arena' ],
+				},
+				modifiers: [
+					[ 'turnEvasion', '+=', 20, 'is very agile in the water' ],
+				],
+				counteractsBaseModifiers: true,
+			},
+		]
+	},
 
 	// MENTAL
 	// -------------------------------------------------------------------------
@@ -249,11 +285,52 @@ var effectConfigs = {
 			}
 		},
 	},
-	'fear-of-snakes': {},
-	'fear-of-rats': {},
+	'phonemic-confusion': {
+		beforeCast: function(manager, player, spell, onSelf) {
+			var bsReplaced = spell.incantation.replace('b', 'd');
+			if (spell.incantation !== bsReplaced) {
+				manager.output.append(`@${player.state.name} tries to say _${spell.incantation}_ but instead says _${bsReplaced}_.`);
+				return false;
+			}
+		}
+	},
+	'fear-of-snakes': {
+		synergies: [
+			{
+				effects: {
+					each: [ 'snakes' ],
+					onEitherPlayer: true,
+				},
+				modifiers: [ 'fear' ],
+			},
+		],
+	},
+	'fear-of-rats': {
+		synergies: [
+			{
+				effects: {
+					each: [ 'rats' ],
+					onEitherPlayer: true,
+				},
+				modifiers: [ 'fear' ],
+			},
+		],
+	},
+	'fear': {
+		modifiers: [
+			[ 'turnPain', '+=', 10, 'is in mental anguish' ],
+		],
+	},
+	'inverted-vision': {
+		noun: 'inverted vision',
+		modifiers: [
+			[ 'turnAccuracy', '-=', 40, 'is very confused' ],
+			[ 'turnEvasion',  '-=', 10 ],
+		],
+	},
 
 
-	// CREATURE
+	// CREATURES
 	// -------------------------------------------------------------------------
 	'brain-parasite': {},
 	'friendly-bard': {
@@ -261,6 +338,22 @@ var effectConfigs = {
 	},
 	'unfriendly-bard': {
 		modifiers: [ [ 'turnPain', '+=', 10, 'feels worse' ] ],
+	},
+	'rats': {},
+	'mice': {},
+	'snakes': {
+		removes: [ 'mice', 'rats' ],
+		removalVerb: 'eat',
+	},
+	'termites': {
+		removes: [ ':isWood' ],
+		removalVerb: 'eat',
+	},
+	'spiders': {},
+	'bees': {},
+	'crows': {
+		removes: [ 'spiders', 'termites' ],
+		removalVerb: 'eat',
 	},
 
 
@@ -288,14 +381,40 @@ var effectConfigs = {
 		},
 	},
 
-	/**
-	 * Global effects (haven't decided if they'll be a thing yet)
-	 */
-	'flood-arena': {
+
+	// HINDRANCES / TRAPS
+	// ---------------------------------------------------------------------------
+	'metal-cage': {
+		isMetal: true,
+		counteracts: [ 'levitation', 'lightning', 'arena-thunderstorm' ],
+		modifiers: [
+			[ 'turnEvasion', '-=', 40, 'is trapped and can\'t dodge effectively' ],
+			[ 'turnShield',  '+=', 5,  'has a small chance of protection against spells' ],
+		],
+	},
+	'entangling-roots': {
+		isWood: true,
+		counteracts: [ 'levitation' ],
+		modifiers: [
+			[ 'turnEvasion', '-=', 40, 'is entangled at the feet and cannot move' ],
+		],
+	},
+
+	// GLOBAL EFFECTS
+	// ---------------------------------------------------------------------------
+	'arena-flood': {
 		global: true,
 	},
-	'rainstorm-arena': {
+	'arena-rain': {
 		global: true,
+		modifiers: [ 'rain' ],
+	},
+	'arena-thunderstorm': {
+		global: true,
+	},
+	'arena-blizzard': {
+		global: true,
+		modifiers: [ 'blizzard' ],
 	},
 };
 
@@ -336,11 +455,29 @@ var Effects = {
 		});
 	},
 
+	extractGlobalEffects(effectNames) {
+		var localEffects = [];
+		var globalEffects = [];
+
+		for (let effectName of effectNames) {
+			if (Effects.get(effectName).global)
+				globalEffects.push(effectName);
+			else
+				localEffects.push(effectName);
+		}
+
+		return { localEffects, globalEffects };
+	},
+
 	getNouns(effectNames) {
 		return effectNames.map((name) => this.get(name).noun);
 	},
 
 	addEffect(currentEffectNames, effectName, output, playerName) {
+		// If the list already contains the effect, adding it will do nothing.
+		if (currentEffectNames.includes(effectName))
+			return currentEffectNames;
+
 		var effect = Effects.get(effectName);
 
 		var allNewEffectNames = [ effectName ];
@@ -363,6 +500,8 @@ var Effects = {
 
 		// Then with all the new effects, see if they negate or remove any existing effects
 		for (let newEffectName of newEffectNames) {
+			var newEffect = Effects.get(newEffectName);
+
 			var negated = this.getNegatedEffects(allEffectNames, newEffectName);
 			if (negated.length) {
 				SetFunctions.remove(allEffectNames, newEffectName);
@@ -370,7 +509,7 @@ var Effects = {
 					SetFunctions.remove(allEffectNames, negatedEffectName);
 
 				if (output)
-					output.append(`The ${newEffectName} has negated @${playerName}'s ${oxfordJoin(negated)}. `);
+					output.append(`The ${newEffect.noun} negates @${playerName}'s ${oxfordJoin(negated)}. `);
 			}
 
 			var removed = this.getRemovedEffects(allEffectNames, newEffectName);
@@ -379,12 +518,13 @@ var Effects = {
 				SetFunctions.remove(allEffectNames, removedEffectName);
 
 			if (output) {
+
 				if (removed.length)
-					output.append(`The ${newEffectName} has removed @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
+					output.append(`The ${newEffect.noun} ${newEffect.removalVerb} @${playerName}'s ${oxfordJoin(this.getNouns(removed))}. `);
 
 				var counteracted = this.getCounteractedEffects(allEffectNames, newEffectName);
 				if (counteracted.length)
-					output.append(`The ${newEffectName} has counteracted @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
+					output.append(`The ${newEffect.noun} counteracts @${playerName}'s ${oxfordJoin(this.getNouns(counteracted))}. `);
 			}
 		}
 
@@ -455,9 +595,16 @@ var Effects = {
 					SetFunctions.add(resultantEffects, resultantEffectName);
 
 				if (output) {
-					var ingredientNouns = this.getNouns(combination[0]);
-					var resultNouns     = this.getNouns(realResults);
-					output.append(`The ${oxfordJoin(ingredientNouns)} combined, resulting in ${oxfordJoin(resultNouns)}. `);
+					if (combination[2]) {
+						// We've got a custom narration for the combination
+						output.append(`${combination[2]} `);
+					}
+					else {
+						// There's no custom narration, so just use a generic formula
+						var ingredientNouns = this.getNouns(combination[0]);
+						var resultNouns     = this.getNouns(realResults);
+						output.append(`The ${oxfordJoin(ingredientNouns)} combined, resulting in ${oxfordJoin(resultNouns)}. `);
+					}
 				}
 			}
 		}
@@ -466,8 +613,9 @@ var Effects = {
 	},
 
 	combinations: [
-		[ [ 'cold', 'water' ], [ 'ice' ] ],
-		[ [ 'cold', 'rain' ], [ 'ice', 'rain' ] ],
+		[ [ 'cold', 'water' ], [ 'ice' ], 'The water freezes into ice.' ],
+		[ [ 'cold', 'rain' ], [ 'hail' ], 'The rain freezes and turns to hail.' ],
+		[ [ 'arena-cold', 'arena-rain' ], [ 'arena-hail' ], 'The rain freezes and turns to hail.' ],
 	],
 
 };

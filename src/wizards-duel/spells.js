@@ -8,21 +8,74 @@ import unfriendlyBards from './data/unfriendly-bards.json';
 const AUTOMATIC_HIT = 99999;
 
 var spellConfigs = [
-	{
-		incantation: 'volito',
-		description: 'levitates',
-		effects: [ 'levitation' ],
-	},
+	// ELEMENTAL
+	// -------------------------------------------------------------------------
 	{
 		incantation: 'madefio',
 		description: 'soaks with water',
 		effects: [ 'water' ],
 	},
 	{
-		incantation: 'confundo',
-		description: 'confuses',
-		effects: [ 'confusion' ],
+		incantation: 'incendio',
+		description: 'has a chance to catch things on fire',
+		onHitTarget: function(manager, target, onSelf) {
+			var flammableEffects = _.intersection(target.state.effects, Effects.filterByAttribute('flammable'));
+			// Calculate chance to catch on fire (aided by presence of very flammable effects)
+			var toCatchOnFire = 0.5 + 0.25 * flammableEffects.length;
+			if (Math.random() <= toCatchOnFire) {
+				target.addEffect('fire');
+				manager.output.append(`@${target.state.name} has caught fire.`);
+			}
+			else {
+				manager.output.append(`@${target.state.name} does not catch fire.`);
+			}
+		},
 	},
+	{
+		incantation: 'tempesto gelato',
+		description: 'conjures an arena-wide blizzard',
+		effects: [ 'arena-blizzard' ],
+	},
+	{
+		incantation: 'oppugno gelato',
+		description: 'conjures a localized blizzard over a combatant',
+		baseSuccessRate: 0.75,
+		hitModifier: -5,
+		effects: [ 'blizzard' ],
+	},
+	{
+		incantation: 'nimbusorio',
+		description: 'conjures an arena-wide rainstorm',
+		effects: [ 'arena-rain' ],
+	},
+	{
+		incantation: 'nimbus polus',
+		description: 'conjures localized rain over a combatant',
+		baseSuccessRate: 0.75,
+		hitModifier: -5,
+		effects: [ 'rain' ],
+	},
+	{
+		incantation: 'tempesto fulmeno',
+		description: 'conjures an arena-wide thunderstorm',
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'nimbus fulmenus',
+		description: 'conjures a small cloud that shoots bolts of lightning',
+		baseSuccessRate: 0.50,
+		hitModifier: -5,
+		effects: [ 'lightning' ],
+	},
+	{
+		incantation: 'nebulo',
+		description: 'wraps combatant in a thick fog',
+		effects: [ 'fog' ],
+	},
+
+
+	// BODY
+	// -------------------------------------------------------------------------
 	{
 		incantation: 'caseum foetidum',
 		description: 'makes one smell like stinky cheese',
@@ -47,21 +100,62 @@ var spellConfigs = [
 		effects: [ 'small-nose' ],
 	},
 	{
-		incantation: 'curatio aegritudinis',
+		incantation: 'curo aegritudinis',
 		description: 'cures illnesses',
 		narration: '@target\'s illnesses have been cured.',
-		removedEffects: [ 'frog-vomitting' ],
+		removedEffects: [ ':isIllness' ],
 		baseSuccessRate: 0.25,
 	},
 	{
-		incantation: 'TODO: CURE STOMACH AILMENTS',
+		incantation: 'curo coeliaca',
 		description: 'cures stomach ailments',
 		narration: '@target\'s stomach ailments have been cured.',
 		removedEffects: [ 'frog-vomitting', 'bowel-stench', 'bowel-slickery' ],
 		baseSuccessRate: 0.75,
 	},
 	{
-		incantation: 'evoco baridum amicum',
+		incantation: 'curo inflammatio',
+		description: 'cures inflammation',
+		baseSuccessRate: 0.75,
+		removedEffects: [ 'swollen-tongue', 'swollen-eyes' ],
+	},
+	{
+		incantation: 'sirenio',
+		description: 'gives combatant a mer-tail',
+		baseSuccessRate: 0.75,
+		effects: [ 'mer-tail' ],
+	},
+
+
+	// MENTAL
+	// -------------------------------------------------------------------------
+	{
+		incantation: 'confundo',
+		description: 'confuses',
+		effects: [ 'confusion' ],
+	},
+	{
+		incantation: 'inebrio',
+		description: 'causes intoxication',
+		effects: [ 'intoxication' ],
+	},
+	{
+		incantation: 'phonemia confusio',
+		description: 'causes a phonemic confusion in which B\'s become D\'s',
+		effects: [ 'phonemic-confusion' ],
+	},
+	{
+		incantation: 'adspectus inverto',
+		description: 'turns vision upside down flipped',
+		baseSuccessRate: 0.5,
+		effects: [ 'inverted-vision' ],
+	},
+
+
+	// CREATURES
+	// -------------------------------------------------------------------------
+	{
+		incantation: 'amiobardi',
 		description: 'conjures a friendly bard',
 		narration: function(target) {
 			var bardName = _.sample(friendlyBards);
@@ -71,7 +165,7 @@ var spellConfigs = [
 		hitModifier: AUTOMATIC_HIT,
 	},
 	{
-		incantation: 'evoco inimicum vatis',
+		incantation: 'inimibardi',
 		description: 'conjures an ufriendly bard',
 		narration: function(target) {
 			var bardName = _.sample(unfriendlyBards);
@@ -81,9 +175,81 @@ var spellConfigs = [
 		hitModifier: AUTOMATIC_HIT,
 	},
 	{
-		incantation: 'TODO: BANISH FRIENDLIES',
-		description: 'banishes friendlies',
+		incantation: 'expello socii',
+		description: 'banishes friendly companions',
+		removedEffects: [ 'friendly-bard' ],
 	},
+	{
+		incantation: 'evoco rati',
+		description: 'summons a mischief of rats',
+		effects: [ 'rats' ],
+	},
+	{
+		incantation: 'evoco muris',
+		description: 'summons mice',
+		effects: [ 'mice' ],
+	},
+	{
+		incantation: 'evoco serpentis',
+		description: 'summons snakes',
+		effects: [ 'snakes' ],
+	},
+	{
+		incantation: 'evoco termitis',
+		description: 'summons termites',
+		effects: [ 'termites' ],
+	},
+	{
+		incantation: 'evoco araneae',
+		description: 'summons a cluster of spiders',
+		effects: [ 'spiders' ],
+	},
+	{
+		incantation: 'evoco apis',
+		description: 'summons a swarm of bees',
+		effects: [ 'bees' ],
+	},
+	{
+		incantation: 'evoco cornicis',
+		description: 'summons a murder of crows',
+		effects: [ 'crows' ],
+	},
+	{
+		incantation: 'taenia solium',
+		description: 'summons a brain parasite',
+		effects: [ 'brain-parasite' ],
+	},
+
+
+	// PROTECTION / BUFFS
+	// -------------------------------------------------------------------------
+	{
+		incantation: 'volito',
+		description: 'levitates',
+		effects: [ 'levitation' ],
+	},
+	{
+		incantation: 'clostrumagia',
+		description: 'provided with a minor magical shield',
+		effects: [ 'magic-shield-10' ],
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'clostrumagia magna',
+		description: 'provided with a decent magical shield',
+		effects: [ 'magic-shield-20' ],
+		baseSuccessRate: 0.50,
+	},
+	{
+		incantation: 'clostrumagia maxima',
+		description: 'provided with a good magical shield',
+		effects: [ 'magic-shield-30' ],
+		baseSuccessRate: 0.25,
+	},
+
+
+	// HINDRANCES / TRAPS
+	// -------------------------------------------------------------------------
 	{
 		incantation: 'anvillus dropio',
 		description: 'banishes friendlies',
@@ -94,69 +260,8 @@ var spellConfigs = [
 		},
 	},
 	{
-		incantation: 'TODO: CURE INFLAMMATION',
-		description: 'cures inflammation',
-		baseSuccessRate: 0.75,
-	},
-	{
-		incantation: 'TODO: FIREBALL',
-		description: 'has a chance to catch things on fire',
-		onHitTarget: function(manager, target, onSelf) {
-			var flammableEffects = _.intersection(target.state.effects, Effects.filterByAttribute('flammable'));
-			// Calculate chance to catch on fire (aided by presence of very flammable effects)
-			var toCatchOnFire = 0.5 + 0.25 * flammableEffects.length;
-			if (Math.random() <= toCatchOnFire) {
-				target.addEffect('fire');
-				manager.output.append(`@${target.state.name} has caught fire.`);
-			}
-			else {
-				manager.output.append(`@${target.state.name} does not catch fire.`);
-			}
-		},
-	},
-	{
-		incantation: 'TODO: BLIZZARD',
-		description: 'arena-wide blizzard',
-	},
-	{
-		incantation: 'TODO: LITTLE BLIZZARD',
-		description: 'local blizzard over player',
-		baseSuccessRate: 0.75,
-		hitModifier: -5,
-	},
-	{
-		incantation: 'TODO: RAINSTORM',
-		description: 'arena-wide rainstorm',
-	},
-	{
-		incantation: 'TODO: LITTLE BLACK RAIN CLOUD',
-		description: 'local rain over player',
-		baseSuccessRate: 0.75,
-		hitModifier: -5,
-	},
-	{
-		incantation: 'TODO: THUNDERSTORM',
-		description: 'arena-wide thunderstorm',
-	},
-	{
-		incantation: 'TODO: LIGHTNING BOLT',
-		description: 'single bolt of lightning',
-		baseSuccessRate: 0.75,
-		hitModifier: -5,
-	},
-	{
-		incantation: 'TODO: UPSIDE-DOWN VISION',
-		description: 'turns vision upside down',
-		baseSuccessRate: 0.5,
-	},
-	{
-		incantation: 'TODO: MER-TAIL',
-		description: 'gives player a mer-tail',
-		baseSuccessRate: 0.75,
-	},
-	{
-		incantation: 'TODO: METAL CAGE',
-		description: 'drops a metal cage around player',
+		incantation: 'cavea metallica',
+		description: 'drops a heavy metal cage around a combatant',
 		baseSuccessRate: 0.75,
 	},
 ];

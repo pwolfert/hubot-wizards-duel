@@ -18,6 +18,17 @@ export default class Effect {
 			return this.name;
 	}
 
+	get removalVerb() {
+		if (this.effect.removalVerb)
+			return this.effect.removalVerb;
+		else
+			return 'removes';
+	}
+
+	get global() {
+		return this.effect.global;
+	}
+
 	get negatedEffects() {
 		if (this.effect.negates)
 			return this.effect.negates;

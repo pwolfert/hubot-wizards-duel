@@ -391,6 +391,8 @@ class Manager {
 				return `  - _${spell.incantation}_`;
 		});
 
+		incantations.sort();
+
 		return [
 			'Spells: ',
 			incantations.join('\n'),

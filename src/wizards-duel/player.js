@@ -258,6 +258,8 @@ class Player {
 				// Show it normally
 				line += noun;
 			}
+
+			list.push(line);
 		}
 
 		return list;
