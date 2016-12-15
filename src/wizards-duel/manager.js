@@ -229,6 +229,15 @@ class Manager {
 		this.brain.set(Manager.getPlayerStateKey(challengee), STATUS_NOT_DUELING);
 		this.setDuelStatus(challenger, challengee, STATUS_NOT_DUELING);
 
+		if (results.won) {
+			var winner = results.won;
+			var loser = winner === challenger ? challengee : challenger;
+			this.output.send(`*@${winner} has defeated @${loser}!* @${loser} failed to cast a spell ${NUM_FAILURES_TO_LOSE} times in a row.`);
+		}
+		else if (results.resigned) {
+			var winner = results.resigned === challenger ? challengee : challenger;
+			this.output.send(`*@${results.resigned} has yielded to @${winner}, making @${winner} the winner!*`);
+		}
 		// TODO: talk about results
 		// https://api.slack.com/docs/message-attachments
 	}
