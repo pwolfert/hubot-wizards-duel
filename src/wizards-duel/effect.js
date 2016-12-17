@@ -1,5 +1,6 @@
-import _       from 'lodash';
-import Effects from './effects';
+import _          from 'lodash';
+import oxfordJoin from 'oxford-join';
+import Effects    from './effects';
 
 const POSSESSIVE_DETERMINER = '_possessive';
 
@@ -72,7 +73,7 @@ class Effect {
 		// Apply listed modifiers
 		if (this.effect.modifiers) {
 			for (let modifier of this.effect.modifiers) {
-				let narrations = this.applyModifier(manager, playerState, modifier);
+				let narrations = this.applyModifier(playerState, modifier);
 				if (narrations.length && verbose)
 					manager.output.append(`Because of ${this.noun}, @${playerState.name} ${oxfordJoin(narrations)}. `);
 			}
@@ -120,14 +121,16 @@ class Effect {
 					if (synergy.effects.each) {
 						numTimesToApply = 0;
 						for (let effectName of synergy.effects.each) {
-							if (effects.includes(effectName))
+							if (effects.includes(effectName)) {
 								numTimesToApply++;
+								applicableEffects.push(effectName);
+							}
 						}
 					}
 					else
 						numTimesToApply = 1;
 
-					if (verbose) {
+					if (verbose && numTimesToApply) {
 						var nouns = Effects.getNouns(applicableEffects);
 						var determiner = this.getDeterminer(playerState.name);
 						manager.output.append(`Because of ${determiner} ${this.noun} and the presence of ${oxfordJoin(nouns)}, @${playerState.name} `);
@@ -138,14 +141,14 @@ class Effect {
 					let didCollectNarrations = false;
 					for (let i = 0; i < numTimesToApply; i++) {
 						for (let modifier of synergy.modifiers) {
-							modifierNarrations = this.applyModifier(manager, playerState, modifier);
+							modifierNarrations = this.applyModifier(playerState, modifier);
 							if (verbose && !didCollectNarrations)
 								narrations.push(modifierNarrations);
 						}
 						didCollectNarrations = true;
 					}
 
-					if (verbose) {
+					if (verbose && numTimesToApply) {
 						manager.output.append(oxfordJoin(narrations));
 						if (numTimesToApply > 1)
 							manager.output.append(`(x${numTimesToApply})`);
@@ -196,9 +199,11 @@ class Effect {
 		else if (typeof modifier === 'string') {
 			// It's the name of another effect; just take its direct modifiers
 			var effect = Effects.get(modifier);
-			if (effect.modifiers) {
-				for (let effectModifier of effect.modifiers)
-					narrations = narrations.concat(this.applyModifier(playerState, effectModifier));
+			if (effect.effect.modifiers) {
+				for (let effectModifier of effect.effect.modifiers) {
+					let modifierNarrations = this.applyModifier(playerState, effectModifier);
+					narrations = narrations.concat(modifierNarrations);
+				}
 			}
 		}
 		else {

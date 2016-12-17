@@ -300,8 +300,12 @@ var effectConfigs = {
 		},
 	},
 	'clarity': {
+		noun: 'mental clarity',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		negates: [ 'confusion', 'intoxication' ],
+		modifiers: [
+			[ 'turnSpellcasting', '+=', 10, 'can think more clearly' ],
+		],
 	},
 	'intoxication': { // Spoonerisms
 		determiner: Effect.POSSESSIVE_DETERMINER,

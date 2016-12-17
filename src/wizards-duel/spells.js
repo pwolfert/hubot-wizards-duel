@@ -125,13 +125,33 @@ var spellConfigs = [
 		baseSuccessRate: 0.75,
 		effects: [ 'mer-tail' ],
 	},
+	{
+		incantation: 'oriculae vespilio',
+		description: 'gives the target bat ears',
+		effects: [ 'bat-ears' ],
+	},
+	{
+		incantation: 'arami noodli',
+		description: 'gives the target noodle arms',
+		effects: [ 'noodle-arms' ],
+	},
+	{
+		incantation: 'reddus bullus',
+		description: 'gives the target wings',
+		effects: [ 'wings' ],
+	},
 
 
 	// MENTAL
 	// -------------------------------------------------------------------------
 	{
+		incantation: 'claritas',
+		description: 'gives the target greater mental clearity',
+		effects: [ 'clarity' ],
+	},
+	{
 		incantation: 'confundo',
-		description: 'confuses',
+		description: 'confuses the target',
 		effects: [ 'confusion' ],
 	},
 	{
@@ -149,6 +169,16 @@ var spellConfigs = [
 		description: 'turns vision upside down flipped',
 		baseSuccessRate: 0.5,
 		effects: [ 'inverted-vision' ],
+	},
+	{
+		incantation: 'ophidiophobia',
+		description: 'causes a fear of snakes',
+		effects: [ 'fear-of-snakes' ],
+	},
+	{
+		incantation: 'musiophobia',
+		description: 'causes a fear of rats',
+		effects: [ 'fear-of-rats' ],
 	},
 
 
@@ -230,7 +260,7 @@ var spellConfigs = [
 	// -------------------------------------------------------------------------
 	{
 		incantation: 'volito',
-		description: 'levitates',
+		description: 'levitates target',
 		effects: [ 'levitation' ],
 	},
 	{
@@ -267,6 +297,7 @@ var spellConfigs = [
 	{
 		incantation: 'cavea metallica',
 		description: 'drops a heavy metal cage around the target',
+		effects: [ 'metal-cage' ],
 		baseSuccessRate: 0.75,
 	},
 ];

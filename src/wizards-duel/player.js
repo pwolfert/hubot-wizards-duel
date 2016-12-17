@@ -1,7 +1,8 @@
-import _ from 'lodash';
-import oxfordJoin from 'oxford-join';
-import clamp from 'clamp';
-import Effects from './effects';
+import _            from 'lodash';
+import oxfordJoin   from 'oxford-join';
+import clamp        from 'clamp';
+import Effects      from './effects';
+import Language     from './language';
 import SetFunctions from './set';
 
 const MIN_ACCURACY =  5;
@@ -71,7 +72,7 @@ class Player {
 		Player.resetTurnVars(this.state);
 
 		if (save)
-			this.save;
+			this.save();
 	}
 
 	attemptSpellCast(spell, onSelf) {
@@ -263,6 +264,49 @@ class Player {
 		}
 
 		return list;
+	}
+
+	/**
+	 * Returns a summary of the player's attributes given the current effects
+	 */
+	getStatus() {
+		var state = this.getAffectedState(true);
+		var initialState = Player.getInitialState();
+		var lines = [];
+		var attributes = {
+			turnSpellcasting: [ 'Spell-casting ability', initialState.spellcasting ],
+			turnAccuracy: [ 'Accuracy', initialState.accuracy ],
+			turnEvasion: [ 'Evasive ability', initialState.evasion ],
+		};
+
+		for (let key in attributes) {
+			let value = state[key];
+			let attr = attributes[key][0];
+			let initial = attributes[key][1];
+
+			if (value === initial)
+				lines.push(`Your ${attr} is normal`);
+			else if (value > initial) {
+				let degree = Language.getDegreeAdverb(value - initial);
+				lines.push(`Your ${attr} is ${degree} improved`);
+			}
+			else {
+				let degree = Language.getSeverityAdverb(initial - value);
+				lines.push(`Your ${attr} is ${degree} diminished`);
+			}
+		}
+
+		if (state.turnPain > 0)
+			lines.push(`You are in ${Language.getSeverityAdjective(state.turnPain)} pain`);
+		else
+			lines.push('You feel no pain');
+
+		if (state.turnShield > 0)
+			lines.push(`and you have a ${Language.getAdvantageAdjective(state.turnShield)} shield.`);
+		else
+			lines.push('and you have no magical shield.');
+
+		return lines.join(',\n');
 	}
 
 };

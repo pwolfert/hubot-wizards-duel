@@ -76,14 +76,40 @@ class Manager {
 		});
 
 		// Listen for effects-list requests
-		this.hear(/list effects/i, (res) => {
+		this.hear(/my effects/i, (res) => {
 			var playerName = res.message.user.name;
-			var player = new Player(this, playerName);
+			var playerState = this.getPlayerState(playerName);
+			if (playerState) {
+				var player = new Player(this, playerName);
 
-			this.output.send(
-				`@${playerName}'s current effects:\n` +
-				player.getEffectList().join('\n')
-			);
+				this.output.reply(
+					`Your current effects:\n` +
+					player.getEffectList().join('\n')
+				);
+			}
+			else
+				this.output.reply('You have no effects because you are not dueling.');
+		});
+
+		// Listen for status requests
+		this.hear(/my status/i, (res) => {
+			var playerName = res.message.user.name;
+			var playerState = this.getPlayerState(playerName);
+			if (playerState) {
+				var player = new Player(this, playerName);
+				var effectsList = player.getEffectList();
+
+				var output = '\n>>>' + player.getStatus() + '\n\n';
+
+				if (effectsList.length)
+					output += 'Your current effects:\n' + player.getEffectList().join('\n');
+				else
+					output += 'You have no effects.';
+
+				this.output.reply(output);
+			}
+			else
+				this.output.reply('You have no dueling status because you are not dueling.');
 		});
 
 		this.robot.hear(/hey hey hey/i, (res) => {
@@ -306,13 +332,14 @@ class Manager {
 
 	utterIncantation(playerName, spell, onSelf) {
 		var player = new Player(this, playerName);
-		player.resetTurnVars();
 
 		if (!player.state) {
 			this.output.reply('Practice makes perfect.');
 			return;
 		}
 		else {
+			player.resetTurnVars();
+
 			var challenger;
 			var challengee;
 
