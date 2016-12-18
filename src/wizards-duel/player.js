@@ -88,15 +88,18 @@ class Player {
 
 		// Attempt to perform the spell
 		if (attemptCast) {
+			var difficultyAdjective = spell.difficultyAdjective;
+			var difficultyPhrase = `${Language.aOrAn(difficultyAdjective)} ${difficultyAdjective} spell`;
+
 			var succeeded = this.spellSucceeded(spell);
 			if (succeeded) {
 				if (onSelf || this.spellHitTarget(spell)) {
 					this.output.startSend();
 
-					this.output.append(`@${this.state.name} casts _${spell.incantation}_`);
+					this.output.append(`@${this.state.name} casts _${spell.incantation}_, ${difficultyPhrase}, `);
 					if (!onSelf)
-						this.output.append(` on @${this.state.opponent}`);
-					this.output.append(`, which ${spell.description}. `);
+						this.output.append(`on @${this.state.opponent}, `);
+					this.output.append(`which ${spell.description}. `);
 
 					spell.cast(this.manager, this, onSelf);
 
@@ -113,7 +116,7 @@ class Player {
 			else if (spell.onFailure)
 				spell.onFailure(this.manager, this, onSelf);
 			else
-				this.output.send(`@${this.state.name} fails to cast _${spell.incantation}_.`);
+				this.output.send(`@${this.state.name} fails to cast _${spell.incantation}_, ${difficultyPhrase}.`);
 
 			return succeeded;
 		}

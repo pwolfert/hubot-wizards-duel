@@ -4,6 +4,7 @@ import Spells       from './spells';
 import Player       from './player';
 import Effect       from './effect';
 import SetFunctions from './set';
+import Language     from './language';
 
 /**
  * Effect Configurations
@@ -70,11 +71,13 @@ var effectConfigs = {
 	// ELEMENTAL
 	// -------------------------------------------------------------------------
 	'fire': {
-		noun: 'burning',
+		noun: 'flames',
 		adjective: 'on fire',
 		negates: [ 'fog', 'cold', 'frost' ],
 	},
-	'burned': {},
+	'burns': {
+		noun: 'burns',
+	},
 	'water': {
 		adjective: 'soaking wet',
 		negates: [ 'fire' ],
@@ -164,11 +167,13 @@ var effectConfigs = {
 		],
 	},
 	'small-nose': {
+		noun: 'small nose',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		counteracts: [ 'stench', 'fragrance', 'bowel-stench' ],
 		negates: [ 'large-nose' ],
 	},
 	'merlins-beard': {
+		noun: 'Merlin-like beard',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		// added wisdom, destroyed by fire and hairloss
 		isFlammable: true,
@@ -182,6 +187,7 @@ var effectConfigs = {
 		],
 	},
 	'bowel-stench': {
+		noun: 'bowel stench',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		isIllness: true,
 		modifiers: [ 'stench' ],
@@ -204,9 +210,11 @@ var effectConfigs = {
 		],
 	},
 	'swollen-tongue': {
+		noun: 'swollen tongue',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 	},
 	'swollen-eyes': {
+		noun: 'swollen eyes',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 	},
 	'wings': {
@@ -214,16 +222,20 @@ var effectConfigs = {
 		isFlammable: true,
 	},
 	'bat-ears': {
+		noun: 'bat ears',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 	},
 	'noodle-arms': {
+		noun: 'noodle arms',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 	},
 	'skin-irritation': {
+		noun: 'skin irritation',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		isIllness: true,
 	},
 	'eagle-head': {
+		noun: 'eagle head',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		modifiers: [
 			[ 'turnAccuracy', '+=', 10, 'has eagle vision' ],
@@ -241,6 +253,7 @@ var effectConfigs = {
 		],
 	},
 	'elephant-form': {
+		noun: 'elephant form',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		removes: [ /* other animal forms */ ],
 		synergies: [
@@ -315,11 +328,16 @@ var effectConfigs = {
 			// 60% chance of swapping word beginnings
 			if (words.length > 1 && Math.random() < 0.6) {
 				// Swap the beginning of the first two words
-				// Maybe figure out where the first vowel begins and select the beginning to that
+				var newIncantation = Language.spoonerize(words).join(' ');
+				if (newIncantation !== spell.incantation) {
+					manager.output.append(`@${player.state.name} tries to say _${spell.incantation}_ but drunkenly says _${newIncantation}_ instead.`);
+					return false;
+				}
 			}
 		},
 	},
 	'phonemic-confusion': {
+		noun: 'phonemic confusion',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		beforeCast: function(manager, player, spell, onSelf) {
 			var bsReplaced = spell.incantation.replace('b', 'd');
@@ -330,6 +348,7 @@ var effectConfigs = {
 		}
 	},
 	'fear-of-snakes': {
+		noun: 'fear of snakes',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		synergies: [
 			{
@@ -342,6 +361,7 @@ var effectConfigs = {
 		],
 	},
 	'fear-of-rats': {
+		noun: 'fear of rats',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		synergies: [
 			{
@@ -372,12 +392,15 @@ var effectConfigs = {
 	// CREATURES
 	// -------------------------------------------------------------------------
 	'brain-parasite': {
+		noun: 'brain parasite',
 		determiner: Effect.POSSESSIVE_DETERMINER,
 	},
 	'friendly-bard': {
+		noun: 'friendly bard',
 		modifiers: [ [ 'turnPain', '-=', 10, 'can bear the pain of this world a little better' ] ],
 	},
 	'unfriendly-bard': {
+		noun: 'unfriendly bard',
 		modifiers: [ [ 'turnPain', '+=', 10, 'feels worse' ] ],
 	},
 	'rats': {},
@@ -408,19 +431,22 @@ var effectConfigs = {
 	// PROTECTION / BUFFS
 	// ---------------------------------------------------------------------------
 	'magic-shield-10': {
+		noun: 'minor magic shield',
 		modifiers: [ [ 'turnShield', '+=', 10, 'is provided with a minor magical shield' ] ],
 	},
 	'magic-shield-20': {
-		modifiers: [ [ 'turnShield', '+=', 20, 'is provided with a decent magical shield' ] ],
+		noun: 'good magic shield',
+		modifiers: [ [ 'turnShield', '+=', 20, 'is provided with a good magical shield' ] ],
 		removes: [ 'magic-shield-10' ],
 	},
 	'magic-shield-30': {
-		modifiers: [ [ 'turnShield', '+=', 30, 'is provided with a good magical shield' ] ],
+		noun: 'greater magic shield',
+		modifiers: [ [ 'turnShield', '+=', 30, 'is provided with a greater magical shield' ] ],
 		removes: [ 'magic-shield-20' ],
 	},
 	'levitation': {
 		adjective: 'floating in the air',
-		counteracts: [ 'entangling-roots' ],
+		counteracts: [ 'entangling-roots', 'flood', 'flood-arena' ],
 	},
 	'spectral': {
 		beforeHit: function(manager, player, spell, onSelf) {
@@ -433,6 +459,7 @@ var effectConfigs = {
 	// HINDRANCES / TRAPS
 	// ---------------------------------------------------------------------------
 	'metal-cage': {
+		noun: 'metal cage',
 		isMetal: true,
 		counteracts: [ 'levitation', 'lightning', 'arena-thunderstorm' ],
 		modifiers: [
@@ -441,6 +468,7 @@ var effectConfigs = {
 		],
 	},
 	'entangling-roots': {
+		noun: 'entangling roots',
 		isWood: true,
 		counteracts: [ 'levitation' ],
 		modifiers: [

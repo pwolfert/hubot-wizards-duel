@@ -34,8 +34,14 @@ const Difficulty = {
 	EXTREMELY_DIFFICULT: { adjective: 'extremely difficult' },
 };
 
+const VOWELS = [ 'a', 'e', 'i', 'o', 'u' ];
+
 
 const Language = {
+
+	aOrAn(word) {
+		return (VOWELS.includes(word.charAt(0))) ? 'an' : 'a';
+	},
 
 	getSeverityAdjective(value) {
 		return this.getSeverity(value).adjective;
@@ -106,18 +112,47 @@ const Language = {
 	},
 
 	getDifficulty(successProbability) {
-		if (value >= 100)
+		if (successProbability >= 100)
 			return Difficulty.EASY;
-		if (value >= 75)
+		if (successProbability >= 75)
 			return Difficulty.NORMAL;
-		if (value >= 50)
+		if (successProbability >= 50)
 			return Difficulty.MODERATE;
-		if (value >= 25)
+		if (successProbability >= 25)
 			return Difficulty.DIFFICULT;
-		if (value >= 5)
+		if (successProbability >= 5)
 			return Difficulty.VERY_DIFFICULT;
 		return Difficulty.EXTREMELY_DIFFICULT;
 	},
+
+	/**
+	 * Swaps the beginning of the first two words to create a spoonerism
+	 */
+	spoonerize(words) {
+		// Can only spoonerize if there are multiple words
+		if (words.length < 2)
+			return words;
+
+		// Split words into two parts, where the first part goes up to and includes the first vowel
+		var regex = /([bcdfghjklmnpqrstvwxy]*[aeiou])(.*)/i;
+		for (let i = 0; i < 2; i++) {
+			let matches = regex.exec(words[i]);
+			words[i] = [
+				matches[1],
+				(matches.length > 2) ? matches[2] : '',
+			];
+		}
+
+		// Swap the first parts of the first two words
+		var swap = words[0][0];
+		words[0][0] = words[1][0];
+		words[1][0] = swap;
+
+		for (let i = 0; i < 2; i++)
+			words[i] = words[i].join('');
+
+		return words;
+	}
 
 };
 

@@ -24,6 +24,7 @@ var spellConfigs = [
 			var toCatchOnFire = 0.5 + 0.25 * flammableEffects.length;
 			if (Math.random() <= toCatchOnFire) {
 				target.addEffect('fire');
+				target.addEffect('burns');
 				manager.output.append(`@${target.state.name} has caught fire.`);
 			}
 			else {
@@ -158,11 +159,13 @@ var spellConfigs = [
 		incantation: 'inebrio',
 		description: 'causes intoxication',
 		effects: [ 'intoxication' ],
+		baseSuccessRate: 0.5,
 	},
 	{
 		incantation: 'phonemia confusio',
 		description: 'causes a phonemic confusion in which B\'s become D\'s',
 		effects: [ 'phonemic-confusion' ],
+		baseSuccessRate: 0.75,
 	},
 	{
 		incantation: 'adspectus inverto',
@@ -298,6 +301,12 @@ var spellConfigs = [
 		incantation: 'cavea metallica',
 		description: 'drops a heavy metal cage around the target',
 		effects: [ 'metal-cage' ],
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'radix irretio',
+		description: 'calls up entangling roots from the ground',
+		effects: [ 'entangling-roots' ],
 		baseSuccessRate: 0.75,
 	},
 ];

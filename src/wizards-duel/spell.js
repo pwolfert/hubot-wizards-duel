@@ -2,6 +2,7 @@ import _          from 'lodash';
 import oxfordJoin from 'oxford-join';
 import Player     from './player';
 import Effects    from './effects';
+import Language   from './language';
 
 /**
  * Class representing a spell, wrapping additional functionality around
@@ -35,6 +36,10 @@ export default class Spell {
 		if (this.spell.narration)
 			return this.spell.narration;
 		return '';
+	}
+
+	get difficultyAdjective() {
+		return Language.getDifficultyAdjective(this.baseSuccessRate * 100);
 	}
 
 	get onFailure() {
