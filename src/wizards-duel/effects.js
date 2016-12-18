@@ -124,6 +124,7 @@ var effectConfigs = {
 	// -------------------------------------------------------------------------
 	'hairless': {
 		determiner: Effect.POSSESSIVE_DETERMINER,
+		removes: [ 'merlins-beard' ],
 	},
 	'frog-vomitting': {
 		noun: 'vomitting up of frogs',
@@ -173,10 +174,12 @@ var effectConfigs = {
 		negates: [ 'large-nose' ],
 	},
 	'merlins-beard': {
-		noun: 'Merlin-like beard',
-		determiner: Effect.POSSESSIVE_DETERMINER,
-		// added wisdom, destroyed by fire and hairloss
+		noun: 'beard',
+		determiner: 'Merlin\'s',
 		isFlammable: true,
+		modifiers: [
+			[ 'turnSpellcasting', '+=', 20, 'receives arcane wisdom' ],
+		],
 	},
 	'bowel-slickery': {
 		noun: 'bowel slickery',
@@ -212,14 +215,22 @@ var effectConfigs = {
 	'swollen-tongue': {
 		noun: 'swollen tongue',
 		determiner: Effect.POSSESSIVE_DETERMINER,
+		modifiers: [
+			[ 'turnSpellcasting', '-=', 15, 'has difficulty speaking' ],
+		],
 	},
 	'swollen-eyes': {
 		noun: 'swollen eyes',
 		determiner: Effect.POSSESSIVE_DETERMINER,
+		modifiers: [
+			[ 'turnAccuracy', '-=', 10, 'has difficulty seeing' ],
+			[ 'turnEvasion',  '-=',  5 ],
+		],
 	},
 	'wings': {
 		determiner: Effect.POSSESSIVE_DETERMINER,
 		isFlammable: true,
+		counteracts: [ 'small-feet', 'tiny-feet' ],
 	},
 	'bat-ears': {
 		noun: 'bat ears',

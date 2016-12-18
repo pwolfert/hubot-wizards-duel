@@ -101,6 +101,11 @@ var spellConfigs = [
 		effects: [ 'small-nose' ],
 	},
 	{
+		incantation: 'coeliacus',
+		description: 'gives target urgent bowel issues',
+		effects: [ 'bowel-stench', 'bowel-slickery' ],
+	},
+	{
 		incantation: 'curo aegritudinis',
 		description: 'cures illnesses',
 		narration: '@target\'s illnesses have been cured.',
@@ -140,6 +145,26 @@ var spellConfigs = [
 		incantation: 'reddus bullus',
 		description: 'gives the target wings',
 		effects: [ 'wings' ],
+	},
+	{
+		incantation: 'oculi inflammatio',
+		description: 'swells the area around the eyes',
+		effects: [ 'swollen-eyes' ],
+	},
+	{
+		incantation: 'lingua inflammatio',
+		description: 'swells the tongue',
+		effects: [ 'swollen-tongue' ],
+	},
+	{
+		incantation: 'barba merlini',
+		description: 'gives the beard of Merlin',
+		effects: [ 'merlins-beard' ],
+	},
+	{
+		incantation: 'rana vomitio',
+		description: 'causes the target to vomit frogs',
+		effects: [ 'frog-vomitting' ],
 	},
 
 
