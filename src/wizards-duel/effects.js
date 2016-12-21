@@ -405,6 +405,7 @@ var effectConfigs = {
 	'brain-parasite': {
 		noun: 'brain parasite',
 		determiner: Effect.POSSESSIVE_DETERMINER,
+		modifiers: [ [ 'turnSpellcasting', '-=', 10, 'has decreased brain capacity' ] ],
 	},
 	'friendly-bard': {
 		noun: 'friendly bard',
@@ -442,16 +443,16 @@ var effectConfigs = {
 	// PROTECTION / BUFFS
 	// ---------------------------------------------------------------------------
 	'magic-shield-10': {
-		noun: 'minor magic shield',
+		noun: 'protective aura I',
 		modifiers: [ [ 'turnShield', '+=', 10, 'is provided with a minor magical shield' ] ],
 	},
 	'magic-shield-20': {
-		noun: 'good magic shield',
+		noun: 'protective aura II',
 		modifiers: [ [ 'turnShield', '+=', 20, 'is provided with a good magical shield' ] ],
 		removes: [ 'magic-shield-10' ],
 	},
 	'magic-shield-30': {
-		noun: 'greater magic shield',
+		noun: 'protective aura III',
 		modifiers: [ [ 'turnShield', '+=', 30, 'is provided with a greater magical shield' ] ],
 		removes: [ 'magic-shield-20' ],
 	},
@@ -651,7 +652,14 @@ var Effects = {
 		var effect = Effects.get(effectName);
 		var removedEffectNames = [];
 		for (let removedEffectName of effect.removedEffects) {
-			if (SetFunctions.includes(effectNames, removedEffectName))
+			if (removedEffectName.charAt(0) === ':') {
+				let attribute = removedEffectName.substring(1);
+				for (let name of effectNames) {
+					if (Effects.get(name).getAttribute(attribute) === true)
+						removedEffectNames.push(name);
+				}
+			}
+			else if (SetFunctions.includes(effectNames, removedEffectName))
 				removedEffectNames.push(removedEffectName);
 		}
 

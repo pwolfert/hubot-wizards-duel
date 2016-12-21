@@ -179,6 +179,7 @@ var spellConfigs = [
 		incantation: 'confundo',
 		description: 'confuses the target',
 		effects: [ 'confusion' ],
+		baseSuccessRate: 0.75,
 	},
 	{
 		incantation: 'inebrio',

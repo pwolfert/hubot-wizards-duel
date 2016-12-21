@@ -358,7 +358,7 @@ class Manager {
 				//   of spell this was and what turn it is.
 				if (!onSelf && !turn.attack) {
 					// They skipped the passive part of their turn
-					this.output.send(`@${player.state.name} skipped his passive turn and went right to the attack!`);
+					this.output.send(`@${player.state.name} skipped the passive turn and went right to the attack!`);
 					// Count this as the attack turn
 					turn.attack = true;
 				}

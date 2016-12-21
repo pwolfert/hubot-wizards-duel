@@ -58,6 +58,13 @@ class Effect {
 		return [];
 	}
 
+	getAttribute(attributeString) {
+		if (attributeString.charAt(0) === ':')
+			attributeString = attributeString.substr(1);
+		
+		return this.effect[attributeString];
+	}
+
 	getDeterminer(player) {
 		if (this.effect.determiner) {
 			if (this.effect.determiner === POSSESSIVE_DETERMINER)
