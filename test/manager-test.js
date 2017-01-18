@@ -9,15 +9,15 @@ var helper = new Helper('../src/wizards-duel.js');
 
 
 describe('Manager', () => {
-	var message1 = 'I challenge @bob to a wizards duel!';
-	var message2 = 'I accept @alice\'s challenge';
+	var challengeMessage = 'I challenge @bob to a wizards duel!';
+	var acceptMessage = 'I accept @alice\'s challenge';
 
 	describe('Sending a Challenge', () => {
 		var room;
 
 		before((done) => {
 			room = helper.createRoom();
-			room.user.say('alice', message1).then(() => {
+			room.user.say('alice', challengeMessage).then(() => {
 				done();
 			});
 		});
@@ -28,7 +28,7 @@ describe('Manager', () => {
 
 		it('responds to challenges - messages', () => {
 			var expectedResult = [
-				['alice', message1],
+				['alice', challengeMessage],
 				['hubot', [
 					'@alice has challenged @bob to a wizard\'s duel!  _Does @bob accept?_',
 					'Type "I accept @alice\'s challenge." to accept.'
@@ -52,8 +52,8 @@ describe('Manager', () => {
 
 		before((done) => {
 			room = helper.createRoom();
-			room.user.say('alice', message1).then(() => {
-				room.user.say('bob', message2).then(() => {
+			room.user.say('alice', challengeMessage).then(() => {
+				room.user.say('bob', acceptMessage).then(() => {
 					var turnKey = Manager.getTurnKey('alice', 'bob');
 					turnData = room.robot.brain.data._private[turnKey];
 					done();
@@ -72,7 +72,7 @@ describe('Manager', () => {
 		it('handles challenge accepting - messages', () => {
 			var startingPlayer = turnData.player;
 			var expectedLast2Messages = [
-				['bob', message2],
+				['bob', acceptMessage],
 				['hubot', [
 					'*Hear ye! Hear ye!*',
 					`A duel shall now commence between @alice and @bob! ` +
@@ -114,8 +114,8 @@ describe('Manager', () => {
 			});
 
 			room = helper.createRoom();
-			room.user.say('alice', message1).then(() => {
-				room.user.say('bob', message2).then(() => {
+			room.user.say('alice', challengeMessage).then(() => {
+				room.user.say('bob', acceptMessage).then(() => {
 					var turnKey = Manager.getTurnKey('alice', 'bob');
 					var turnData = room.robot.brain.data._private[turnKey];
 					firstPlayer = turnData.player;
