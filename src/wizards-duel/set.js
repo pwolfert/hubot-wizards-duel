@@ -1,7 +1,17 @@
+import _ from 'lodash';
 
 var SetFunctions = {
 
 	add(array, item) {
+		if (_.isArray(item)) {
+			for (let i of item)
+				this._addOne(array, i);
+		}
+		else
+			this._addOne(array, item);
+	},
+
+	_addOne(array, item) {
 		if (array.indexOf(item) === -1)
 			array.push(item);
 	},

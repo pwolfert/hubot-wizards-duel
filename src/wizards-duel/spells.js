@@ -195,9 +195,9 @@ var spellConfigs = [
 	},
 	{
 		incantation: 'adspectus inverto',
-		description: 'turns vision upside down flipped',
+		description: 'turns vision upside-down and flipped',
 		baseSuccessRate: 0.5,
-		effects: [ 'inverted-vision' ],
+		toggledEffects: [ 'inverted-vision' ],
 	},
 	{
 		incantation: 'ophidiophobia',
@@ -334,6 +334,17 @@ var spellConfigs = [
 		description: 'calls up entangling roots from the ground',
 		effects: [ 'entangling-roots' ],
 		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'copula cannabia',
+		description: 'binds the target with hemp ropes',
+		effects: [ 'hemp-ropes' ],
+		baseSuccessRate: 0.75,
+	},
+	{
+		incantation: 'pinabuturum spredio',
+		description: 'covers the target in peanut butter',
+		effects: [ 'peanut-butter' ],
 	},
 ];
 

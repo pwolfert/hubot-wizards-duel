@@ -1,6 +1,7 @@
-import _          from 'lodash';
-import oxfordJoin from 'oxford-join';
-import Effects    from './effects';
+import _            from 'lodash';
+import oxfordJoin   from 'oxford-join';
+import Effects      from './effects';
+import SetFunctions from './set';
 
 const POSSESSIVE_DETERMINER = '_possessive';
 
@@ -36,6 +37,13 @@ class Effect {
 			return 'negates';
 	}
 
+	get repellingVerb() {
+		if (this.effect.repellingVerb)
+			return this.effect.repellingVerb;
+		else
+			return 'repels';
+	}
+
 	get global() {
 		return this.effect.global;
 	}
@@ -47,8 +55,17 @@ class Effect {
 	}
 
 	get removedEffects() {
+		var list = [];
 		if (this.effect.removes)
-			return this.effect.removes;
+			SetFunctions.add(list, this.effect.removes);
+		if (this.effect.alwaysRemoves)
+			SetFunctions.add(list, this.effect.alwaysRemoves);
+		return list;
+	}
+
+	get alwaysRemovedEffects() {
+		if (this.effect.alwaysRemoves)
+			return this.effect.alwaysRemoves;
 		return [];
 	}
 
@@ -58,10 +75,55 @@ class Effect {
 		return [];
 	}
 
+	get repelledEffects() {
+		if (this.effect.repels)
+			return this.effect.repels;
+		return [];
+	}
+
+	removes(effectName) {
+		return Effect.applies(this.removedEffects, effectName);
+	}
+
+	alwaysRemoves(effectName) {
+		return Effect.applies(this.alwaysRemovedEffects, effectName);
+	}
+
+	negates(effectName) {
+		return Effect.applies(this.negatedEffects, effectName);
+	}
+
+	counteracts(effectName) {
+		return Effect.applies(this.counteractedEffects, effectName);
+	}
+
+	repels(effectName) {
+		return Effect.applies(this.repelledEffects, effectName);
+	}
+
+	static applies(effectNames, effectName) {
+		// Look to see if it's listed outright
+		if (effectNames.includes(effectName))
+			return true;
+
+		// Look to see if it has a matching attribute
+		var effect = Effects.get(effectName);
+		for (let name of effectNames) {
+			if (name.charAt(0) === ':') {
+				let attribute = name.substring(1);
+				if (effect.getAttribute(attribute) === true)
+					return true;
+			}
+		}
+
+		// Doesn't apply
+		return false;
+	}
+
 	getAttribute(attributeString) {
 		if (attributeString.charAt(0) === ':')
 			attributeString = attributeString.substr(1);
-		
+
 		return this.effect[attributeString];
 	}
 

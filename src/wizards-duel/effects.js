@@ -20,8 +20,9 @@ var effectConfigs = {
 		adjective: 'exampled',
 		negates: [ 'fire' ],
 		removes: [ 'sunlight', ':isFlammable', ':isWood' ],
+		alwaysRemoves: [ 'termites' ], // Removes effects even when it's not a new effect being added
 		counteracts: [ 'fog' ],
-		counteredBy: [], // I haven't yet decided if I want this, but it would make it easier to write configs some cases even if it's redundant
+		repels: [ 'entangling-roots' ], // Works like removes but only keeps a new effect from being added
 		modifiers: [
 			[ 'turnSpellcasting', '+=', 10, 'has an easier time thinking' ],
 			[ 'turnAccuracy',     '-=', 20, 'has difficulty seeing' ],
@@ -415,25 +416,38 @@ var effectConfigs = {
 		noun: 'unfriendly bard',
 		modifiers: [ [ 'turnPain', '+=', 10, 'feels worse' ] ],
 	},
-	'rats': {},
-	'mice': {},
+	'rats': {
+		noun: 'mischief of rats',
+	},
+	'mice': {
+		noun: 'nest of mice',
+	},
 	'snakes': {
+		noun: 'nest of snakes',
 		removes: [ 'mice', 'rats' ],
 		removalVerb: 'eat',
 	},
 	'termites': {
-		removes: [ ':isWood' ],
+		noun: 'colony of termites',
+		alwaysRemoves: [ ':isWood' ],
 		removalVerb: 'eat',
 	},
-	'spiders': {},
-	'bees': {},
+	'spiders': {
+		noun: 'cluster of spiders',
+		modifiers: [ 'fear' ],
+	},
+	'bees': {
+		noun: 'swarm of bees',
+		modifiers: [ [ 'turnPain', '+=', 10, 'is covered in painful bee stings' ] ],
+	},
 	'crows': {
-		removes: [ 'spiders', 'termites' ],
+		noun: 'murder of crows',
+		alwaysRemoves: [ 'spiders', 'termites' ],
 		removalVerb: 'eat',
 	},
 	'mongoose': {
 		noun: 'mongoose',
-		removes: [ 'spiders', 'termites' ],
+		alwaysRemoves: [ 'spiders', 'termites' ],
 		removalVerb: 'eat',
 		negates: [ 'snakes' ],
 		negatingVerb: 'succeeds in but dies fighting',
@@ -458,7 +472,9 @@ var effectConfigs = {
 	},
 	'levitation': {
 		adjective: 'floating in the air',
-		counteracts: [ 'entangling-roots', 'flood', 'flood-arena' ],
+		counteracts: [ 'flood', 'flood-arena' ],
+		repels: [ 'entangling-roots' ],
+		repellingVerb: 'is out of reach of',
 	},
 	'spectral': {
 		beforeHit: function(manager, player, spell, onSelf) {
@@ -487,6 +503,16 @@ var effectConfigs = {
 			[ 'turnEvasion', '-=', 40, 'is entangled at the feet and cannot move' ],
 		],
 	},
+	'hemp-ropes': {
+		noun: 'hemp ropes',
+		modifiers: [
+			[ 'turnEvasion', '-=', 40, 'is bound and can\'t dodge effectively' ],
+		],
+	},
+	'peanut-butter': {
+		noun: 'peanut butter coating',
+		adjective: 'peanut-buttered',
+	},
 
 	// GLOBAL EFFECTS
 	// ---------------------------------------------------------------------------
@@ -505,6 +531,16 @@ var effectConfigs = {
 		modifiers: [ 'blizzard' ],
 	},
 };
+
+var combinations = [
+	[ [ 'hemp-ropes', 'peanut-butter', 'mice' ], [ 'mice' ], 'The mice, eating the peanut butter, chew through the ropes.' ],
+	[ [ 'peanut-butter', 'mice' ], [ 'mice' ], 'The mice eat the peanut butter.' ],
+	[ [ 'hemp-ropes', 'peanut-butter', 'rats' ], [ 'rats' ], 'The rats, eating the peanut butter, chew through the ropes.' ],
+	[ [ 'peanut-butter', 'rats' ], [ 'rats' ], 'The rats eat the peanut butter.' ],
+	[ [ 'cold', 'water' ], [ 'ice' ], 'The water freezes into ice.' ],
+	[ [ 'cold', 'rain' ], [ 'hail' ], 'The rain freezes and turns to hail.' ],
+	[ [ 'arena-cold', 'arena-rain' ], [ 'arena-hail' ], 'The rain freezes and turns to hail.' ],
+];
 
 /**
  * The interface through which we will access effects from other modules
@@ -568,6 +604,27 @@ var Effects = {
 
 		var effect = Effects.get(effectName);
 
+		// If there is a current effect that alwaysRemoves this effect, don't add it.
+		for (let name of currentEffectNames) {
+			let currentEffect = Effects.get(name);
+			if (currentEffect.alwaysRemoves(effectName)) {
+				if (output) {
+					let d = currentEffect.getDeterminer(playerName);
+					let Determiner = d.charAt(0).toUpperCase() + d.slice(1);
+					output.append(`${Determiner} ${currentEffect.noun} ${currentEffect.removalVerb} ${effect.getDeterminer(playerName)} ${effect.noun}. `);
+				}
+				return currentEffectNames;
+			}
+			else if (currentEffect.repels(effectName)) {
+				if (output) {
+					let d = currentEffect.getDeterminer(playerName);
+					let Determiner = d.charAt(0).toUpperCase() + d.slice(1);
+					output.append(`${Determiner} ${currentEffect.noun} ${currentEffect.repellingVerb} ${effect.getDeterminer(playerName)} ${effect.noun}. `);
+				}
+				return currentEffectNames;
+			}
+		}
+
 		var allNewEffectNames = [ effectName ];
 		var allEffectNames = currentEffectNames.concat([ effectName ]);
 
@@ -576,7 +633,7 @@ var Effects = {
 		var resultantEffects;
 		do {
 			({ remainingEffects, resultantEffects } = this.getCombinationResults(allEffectNames, output, playerName));
-
+			console.log(remainingEffects, resultantEffects)
 			if (resultantEffects.length) {
 				allEffectNames = remainingEffects.concat(resultantEffects);
 				allNewEffectNames = allNewEffectNames.concat(resultantEffects);
@@ -599,7 +656,7 @@ var Effects = {
 					SetFunctions.remove(allEffectNames, negatedEffectName);
 
 				if (output)
-					output.append(`${Determiner} ${newEffect.noun} ${newEffect.negatingVerb} ${determiner} ${oxfordJoin(negated)}. `);
+					output.append(`${Determiner} ${newEffect.noun} ${newEffect.negatingVerb} the ${oxfordJoin(negated)}. `);
 			}
 
 			var removed = this.getRemovedEffects(allEffectNames, newEffectName);
@@ -609,11 +666,11 @@ var Effects = {
 
 			if (output) {
 				if (removed.length)
-					output.append(`${Determiner} ${newEffect.noun} ${newEffect.removalVerb} ${determiner} ${oxfordJoin(this.getNouns(removed))}. `);
+					output.append(`${Determiner} ${newEffect.noun} ${newEffect.removalVerb} the ${oxfordJoin(this.getNouns(removed))}. `);
 
 				var counteracted = this.getCounteractedEffects(allEffectNames, newEffectName);
 				if (counteracted.length)
-					output.append(`${Determiner} ${newEffect.noun} counteracts ${determiner} ${oxfordJoin(this.getNouns(counteracted))}. `);
+					output.append(`${Determiner} ${newEffect.noun} counteracts the ${oxfordJoin(this.getNouns(counteracted))}. `);
 			}
 		}
 
@@ -628,42 +685,26 @@ var Effects = {
 
 	getCounteractedEffects(effectNames, effectName) {
 		var effect = Effects.get(effectName);
-		var counteractedEffectNames = [];
-		for (let counteractedEffectName of effect.counteractedEffects) {
-			if (SetFunctions.includes(effectNames, counteractedEffectName))
-				counteractedEffectNames.push(counteractedEffectName);
-		}
 
-		return counteractedEffectNames;
+		return _.filter(effectNames, function(name) {
+			return (effect.counteracts(name));
+		});
 	},
 
 	getNegatedEffects(effectNames, effectName) {
 		var effect = Effects.get(effectName);
-		var negatedEffectNames = [];
-		for (let negatedEffectName of effect.negatedEffects) {
-			if (SetFunctions.includes(effectNames, negatedEffectName))
-				negatedEffectNames.push(negatedEffectName);
-		}
 
-		return negatedEffectNames;
+		return _.filter(effectNames, function(name) {
+			return (effect.negates(name));
+		});
 	},
 
 	getRemovedEffects(effectNames, effectName) {
 		var effect = Effects.get(effectName);
-		var removedEffectNames = [];
-		for (let removedEffectName of effect.removedEffects) {
-			if (removedEffectName.charAt(0) === ':') {
-				let attribute = removedEffectName.substring(1);
-				for (let name of effectNames) {
-					if (Effects.get(name).getAttribute(attribute) === true)
-						removedEffectNames.push(name);
-				}
-			}
-			else if (SetFunctions.includes(effectNames, removedEffectName))
-				removedEffectNames.push(removedEffectName);
-		}
 
-		return removedEffectNames;
+		return _.filter(effectNames, function(name) {
+			return (effect.removes(name));
+		});
 	},
 
 	getCombinationResults(effectNames, output, playerName) {
@@ -708,11 +749,7 @@ var Effects = {
 		return { remainingEffects, resultantEffects };
 	},
 
-	combinations: [
-		[ [ 'cold', 'water' ], [ 'ice' ], 'The water freezes into ice.' ],
-		[ [ 'cold', 'rain' ], [ 'hail' ], 'The rain freezes and turns to hail.' ],
-		[ [ 'arena-cold', 'arena-rain' ], [ 'arena-hail' ], 'The rain freezes and turns to hail.' ],
-	],
+	combinations: combinations,
 
 };
 

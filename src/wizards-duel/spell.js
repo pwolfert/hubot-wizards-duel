@@ -58,6 +58,12 @@ export default class Spell {
 		return [];
 	}
 
+	get toggledEffects() {
+		if (this.spell.toggledEffects)
+			return this.spell.toggledEffects;
+		return [];
+	}
+
 	get baseSuccessRate() {
 		if (this.spell.baseSuccessRate)
 			return this.spell.baseSuccessRate;
@@ -98,6 +104,16 @@ export default class Spell {
 			for (i = 0; i < this.removedEffects.length; i++) {
 				if (target.state.effects.includes(this.removedEffects[i]))
 					target.removeEffect(this.removedEffects[i]);
+			}
+		}
+
+		// Toggle effects as appropriate
+		if (this.toggledEffects.length) {
+			for (i = 0; i < this.toggledEffects.length; i++) {
+				if (target.state.effects.includes(this.toggledEffects[i]))
+					target.removeEffect(this.toggledEffects[i]);
+				else
+					target.addEffect(this.toggledEffects[i]);
 			}
 		}
 
