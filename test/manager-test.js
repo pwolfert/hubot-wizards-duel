@@ -44,6 +44,25 @@ describe('Manager', () => {
 			expect(room.robot.brain.data._private[duelKey]).to.eql(Manager.STATUS_CHALLENGE_SENT);
 		});
 
+		it('disallows the challengee from challenging the challenger', () => {
+			console.log('testing console log out here');
+			// Issue second challenge
+			return room.user.say('bob', 'I challenge @alice to a wizards duel!').then(() => {
+				var challengeResults = [
+					'hubot', [
+						'@bob has challenged @alice to a wizard\'s duel!  _Does @alice accept?_',
+						'Type "I accept @bob\'s challenge." to accept.'
+					].join('\n')
+				];
+				// console.log('last message: ', room.messages[room.messages.length - 1]);
+				// console.log('challengeResults: ', challengeResults);
+
+				// Compare last message
+				// TODO: Change this to expect the rejection message once it's written
+				expect(room.messages[room.messages.length - 1]).to.not.deep.equal(challengeResults);
+			});
+		});
+
 	});
 
 	describe('Accepting a Challenge', () => {
