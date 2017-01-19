@@ -251,6 +251,7 @@ class Manager {
 	}
 
 	duelEnded(challenger, challengee, results) {
+		// Should be Manager.setPlayerState(challenger, STATUS_NOT_DUELING) ?
 		this.brain.set(Manager.getPlayerStateKey(challenger), STATUS_NOT_DUELING);
 		this.brain.set(Manager.getPlayerStateKey(challengee), STATUS_NOT_DUELING);
 		this.setDuelStatus(challenger, challengee, STATUS_NOT_DUELING);
@@ -285,7 +286,11 @@ class Manager {
 	}
 
 	acceptChallenge(challenger, challengee) {
-		if (this.getDuelStatus(challenger, challengee) === STATUS_CHALLENGE_SENT) {
+		var challengeeState = this.getPlayerState(challengee);
+		if (challengeeState) {
+			this.output.reply(`Thou art already dueling with @${challengeeState.opponent}!`);
+		}
+		else if (this.getDuelStatus(challenger, challengee) === STATUS_CHALLENGE_SENT) {
 			this.setInitialPlayerState(challenger, true,  challengee);
 			this.setInitialPlayerState(challengee, false, challenger);
 			this.setDuelStatus(challenger, challengee, STATUS_DUELING);
