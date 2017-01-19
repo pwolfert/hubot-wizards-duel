@@ -45,7 +45,6 @@ describe('Manager', () => {
 		});
 
 		it('disallows the challengee from challenging the challenger', () => {
-			console.log('testing console log out here');
 			// Issue second challenge
 			return room.user.say('bob', 'I challenge @alice to a wizards duel!').then(() => {
 				var challengeResults = [

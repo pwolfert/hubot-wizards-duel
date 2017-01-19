@@ -633,7 +633,7 @@ var Effects = {
 		var resultantEffects;
 		do {
 			({ remainingEffects, resultantEffects } = this.getCombinationResults(allEffectNames, output, playerName));
-			console.log(remainingEffects, resultantEffects)
+			// console.log(remainingEffects, resultantEffects)
 			if (resultantEffects.length) {
 				allEffectNames = remainingEffects.concat(resultantEffects);
 				allNewEffectNames = allNewEffectNames.concat(resultantEffects);
