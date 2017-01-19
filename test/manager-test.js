@@ -43,25 +43,6 @@ describe('Manager', () => {
 
 			expect(room.robot.brain.data._private[duelKey]).to.eql(Manager.STATUS_CHALLENGE_SENT);
 		});
-
-		it('disallows the challengee from challenging the challenger', () => {
-			// Issue second challenge
-			return room.user.say('bob', 'I challenge @alice to a wizards duel!').then(() => {
-				var challengeResults = [
-					'hubot', [
-						'@bob has challenged @alice to a wizard\'s duel!  _Does @alice accept?_',
-						'Type "I accept @bob\'s challenge." to accept.'
-					].join('\n')
-				];
-				// console.log('last message: ', room.messages[room.messages.length - 1]);
-				// console.log('challengeResults: ', challengeResults);
-
-				// Compare last message
-				// TODO: Change this to expect the rejection message once it's written
-				expect(room.messages[room.messages.length - 1]).to.not.deep.equal(challengeResults);
-			});
-		});
-
 	});
 
 	describe('Accepting a Challenge', () => {
@@ -113,6 +94,41 @@ describe('Manager', () => {
 			expect(room.robot.brain.data._private[duelKey]).to.eql(Manager.STATUS_DUELING);
 		});
 
+	});
+
+	describe('Accepting challenges during a duel', () => {
+		var room;
+		var turnData;
+
+		before((done) => {
+			room = helper.createRoom();
+			room.user.say('alice', challengeMessage).then(() => {
+				done();
+			});
+		});
+
+		after(() => {
+			room.destroy();
+		});
+
+		it('disallows accepting a challenge during a duel', () => {
+			// Alice already challenged Bob
+			// Bob challenges Alice
+			return room.user.say('bob', 'I challenge @alice to a wizards duel!').then(() => {
+				// Alice accepts Bob's challenge
+				return room.user.say('alice', 'I accept @bob\'s challenge').then(() => {
+					// Bob accepts Alice's challenge <-- Should fail
+					return room.user.say('bob', 'I accept @alice\'s challenge').then(() => {
+						var challengeResults = [
+							'hubot', '@bob Thou art already dueling with @alice!'
+						];
+
+						// Compare last message
+						expect(room.messages[room.messages.length - 1]).to.deep.equal(challengeResults);
+					});
+				});
+			});
+		});
 	});
 
 	describe('First attack applies effects and sets turn to next player', () => {
