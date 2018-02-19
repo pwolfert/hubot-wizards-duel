@@ -72,7 +72,17 @@ class Manager {
 
 		// Listen for spell-list requests
 		this.hear(/list spells/i, (res) => {
-			this.output.send(this.getSpellsList());
+			var spells = this.getSpellsList();
+
+			this.output.response.send({
+				text: 'Spells',
+				attachments: [
+					{
+						text: spells,
+						mrkdwn_in: ['text'],
+					}
+				]
+			});
 		});
 
 		// Listen for effects-list requests
@@ -422,17 +432,14 @@ class Manager {
 
 		var incantations = Spells.spells.map((spell) => {
 			if (knownSpells.includes(spell.incantation))
-				return `  - _*${spell.incantation}*_ - ${spell.description}`
+				return `_*${spell.incantation}*_ - ${spell.description}`
 			else
-				return `  - _${spell.incantation}_`;
+				return `_${spell.incantation}_`;
 		});
 
 		incantations.sort();
 
-		return [
-			'Spells: ',
-			incantations.join('\n'),
-		].join('\n');
+		return incantations.join('\n');
 	}
 
 }
