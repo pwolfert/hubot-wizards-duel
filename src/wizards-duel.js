@@ -8,10 +8,8 @@
 //   pwolfert
 //
 
-import Manager from './wizards-duel/manager';
+import Manager from "./wizards-duel/manager";
 
 export default function(robot) {
-
-	var manager = new Manager(robot);
-
-};
+  var manager = new Manager(robot);
+}

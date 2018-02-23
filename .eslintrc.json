@@ -1,24 +1,17 @@
 {
-	"env": {
-		"node": true,
-		"es6": true
-	},
-	"parserOptions": {
-		"ecmaVersion": 6,
-		"sourceType": "module"
-	},
-	"rules": {
-		"indent": ["error", "tab", {"SwitchCase": 1}],
-		"space-before-function-paren": ["error", "never"],
-		"keyword-spacing": "off",
-		"curly": ["off", "multi-or-nest"],
-		"brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
-		"quotes": ["error", "single", { "avoidEscape": true }],
-		"comma-dangle": ["warn", "always-multiline"],
-		"operator-linebreak": ["error", "before"],
-		"semi": ["error", "always"],
-		"no-multi-spaces": "off",
-		"operator-linebreak": "off",
-		"no-debugger": "off"
-	}
+  "extends": ["prettier"],
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": 2,
+    "no-multi-spaces": "off",
+    "operator-linebreak": "off",
+    "no-debugger": "off"
+  }
 }

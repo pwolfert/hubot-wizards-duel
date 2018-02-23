@@ -6,59 +6,59 @@ import Spells  from '../src/wizards-duel/spells.js';
 var expect = chai.expect;
 
 describe('Spells', () => {
-	var player;
-	var manager;
+  var player;
+  var manager;
 
-	beforeEach(() => {
-		manager = new Manager({
-			brain: {},
-			hear: () => {},
-		});
+  beforeEach(() => {
+    manager = new Manager({
+      brain: {},
+      hear: () => {},
+    });
 
-		manager.startOutput({
-			send: function() {},
-			reply: function() {},
-		});
+    manager.startOutput({
+      send: function() {},
+      reply: function() {},
+    });
 
-		player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
-	});
+    player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
+  });
 
-	it('adds and removes appropriate effects', () => {
-		player.state.effects = [ 'confusion' ];
+  it('adds and removes appropriate effects', () => {
+    player.state.effects = [ 'confusion' ];
 
-		var spell = Spells.create({
-			incantation: 'examplio',
-			effects: [ 'fragrance' ],
-			removedEffects: [ 'confusion' ],
-		});
+    var spell = Spells.create({
+      incantation: 'examplio',
+      effects: [ 'fragrance' ],
+      removedEffects: [ 'confusion' ],
+    });
 
-		spell.cast(manager, player, true);
+    spell.cast(manager, player, true);
 
-		expect(player.state.effects).to.deep.eql([ 'fragrance' ]);
-	});
+    expect(player.state.effects).to.deep.eql([ 'fragrance' ]);
+  });
 
-	it('calls #cast in config', () => {
-		var spell = Spells.create({
-			incantation: 'examplio',
-			cast: function(manager, player, onSelf) {
-				player.state.hi = 'hello';
-			}
-		});
+  it('calls #cast in config', () => {
+    var spell = Spells.create({
+      incantation: 'examplio',
+      cast: function(manager, player, onSelf) {
+        player.state.hi = 'hello';
+      }
+    });
 
-		spell.cast(manager, player, true);
+    spell.cast(manager, player, true);
 
-		expect(player.state.hi).to.eql('hello');
-	});
+    expect(player.state.hi).to.eql('hello');
+  });
 
-	it('#getNarration works', () => {
-		var spell = Spells.create({
-			incantation: 'examplio',
-			narration: '@target smells like stinky cheese',
-		});
+  it('#getNarration works', () => {
+    var spell = Spells.create({
+      incantation: 'examplio',
+      narration: '@target smells like stinky cheese',
+    });
 
-		spell.cast(manager, player, true);
+    spell.cast(manager, player, true);
 
-		expect(spell.getNarration('alice')).to.eql('@alice smells like stinky cheese');
-	});
+    expect(spell.getNarration('alice')).to.eql('@alice smells like stinky cheese');
+  });
 
 });
