@@ -19,3 +19,9 @@ Then add **hubot-wizards-duel** to your `external-scripts.json`:
 ## NPM Module
 
 https://www.npmjs.com/package/hubot-wizards-duel
+
+## Development
+
+### Scripts
+- `grunt build` - compiles with babel
+- `grunt watch` - watches for changes to source and builds
