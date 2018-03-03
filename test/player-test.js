@@ -21,7 +21,7 @@ describe('Player', () => {
       reply: function() {},
     });
 
-    player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
+    player = new Player(manager, Player.createInitialState('alice', true, 'bob'));
   });
 
   it('#resetTurnVars works', () => {
@@ -79,7 +79,7 @@ describe('Player', () => {
   });
 
   it('#spellHitTarget correctly calculates hit success and failure', () => {
-    var opponentState = Player.getInitialState('bob', false, 'alice');
+    var opponentState = Player.createInitialState('bob', false, 'alice');
     manager.getPlayerState = () => {
       return opponentState;
     };

@@ -19,7 +19,7 @@ describe('Effects', () => {
     var manager;
 
     beforeEach(() => {
-      playerState = Player.getInitialState('alice', true, 'bob');
+      playerState = Player.createInitialState('alice', true, 'bob');
 
       manager = new Manager({
         brain: {},

@@ -1,3 +1,5 @@
+// @flow
+
 import _ from "lodash";
 import oxfordJoin from "oxford-join";
 import Spells from "./spells";
@@ -533,35 +535,42 @@ var combinations = [
  * The interface through which we will access effects from other modules
  */
 var Effects = {
-  effects: _.mapValues(effectConfigs, function(effect, effectName) {
-    return new Effect(effectName, effect);
-  }),
+  effects: _.mapValues(
+    effectConfigs,
+    (effect, effectName) => new Effect(effectName, effect)
+  ),
 
-  get(effectName) {
+  get(effectName: string): Effect {
     return this.effects[effectName];
   },
 
   /**
    * Only used for testing
    */
-  create(effectName, config) {
-    var effect = new Effect(effectName, config);
+  create(effectName: string, config: any): Effect {
+    const effect = new Effect(effectName, config);
     this.effects[effectName] = effect;
     return effect;
   },
 
-  filterByAttribute(effectNames, attribute, value) {
+  filterByAttribute(
+    effectNames: string[] | string,
+    attribute?: string,
+    value?: mixed
+  ): string[] {
     if (typeof effectNames === "string") {
       value = attribute;
       attribute = effectNames;
-      effectNames = _.map(this.effects, effect => effect.name);
+      effectNames = Object.keys(this.effects);
+    } else if (attribute === undefined) {
+      throw new Error("filterByAttribute needs attribute parameter");
     }
 
     if (value === undefined) value = true;
 
-    return _.filter(effectNames, effectName => {
-      return Effects.get(effectName).effect[attribute] === value;
-    });
+    return effectNames.filter(
+      effectName => effectConfigs[effectName][attribute] === value
+    );
   },
 
   extractGlobalEffects(effectNames) {

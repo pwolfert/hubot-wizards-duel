@@ -19,11 +19,11 @@ window.Manager = Manager;
     const hitResult = document.querySelector('#hit-result');
 
     hitForm.addEventListener('submit', (event) => {
-      var player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
+      var player = new Player(manager, Player.createInitialState('alice', true, 'bob'));
       player.state.turnAccuracy = parseFloat(hitForm.accuracy.value);
       player.state.turnPain = parseFloat(hitForm.playerPain.value);
 
-      var opponentState = Player.getInitialState('bob', false, 'alice');
+      var opponentState = Player.createInitialState('bob', false, 'alice');
       opponentState.turnEvasion = parseFloat(hitForm.evasion.value);
       opponentState.turnPain = parseFloat(hitForm.opponentPain.value);
 
@@ -41,7 +41,7 @@ window.Manager = Manager;
     const castResult = document.querySelector('#cast-result');
 
     castForm.addEventListener('submit', (event) => {
-      var player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
+      var player = new Player(manager, Player.createInitialState('alice', true, 'bob'));
       player.state.turnSpellcasting = parseFloat(castForm.spellcasting.value);
       player.state.turnPain = parseFloat(castForm.pain.value);
 

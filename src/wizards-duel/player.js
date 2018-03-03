@@ -1,9 +1,11 @@
-import _ from "lodash";
+// @flow
 import oxfordJoin from "oxford-join";
 import clamp from "clamp";
 import Effects from "./effects";
 import Language from "./language";
 import SetFunctions from "./set";
+
+import type { DuelState } from "./manager";
 
 const MIN_ACCURACY = 5;
 const MAX_ACCURACY = 95;
@@ -12,38 +14,182 @@ const MAX_EVASION = 95;
 const MIN_PAIN = 0;
 const MAX_PAIN = 100;
 
+export type PlayerState =
+  & {
+    name: string,
+    isChallenger: boolean,
+    opponent: string,
+    effects: Array<any>,
+    numFailures: number
+  }
+  & PlayerAttributes
+  & TurnVars;
+
+type PlayerAttributes = {
+  spellcasting: number,
+  accuracy: number,
+  evasion: number,
+  pain: number
+};
+
+type TurnVars = {
+  turnSpellcasting: number,
+  turnAccuracy: number,
+  turnEvasion: number,
+  turnShield: number,
+  turnPain: number
+};
+
+export type PlayerAttribute = $Keys<PlayerAttributes> | $Keys<TurnVars>;
+
+export function createInitialState(
+  name: string,
+  isChallenger: boolean,
+  opponent: string
+): PlayerState {
+  const playerState = {
+    name,
+    isChallenger,
+    opponent,
+    effects: [],
+    numFailures: 0,
+    spellcasting: 100,
+    accuracy: 95,
+    evasion: 5,
+    pain: 0
+  };
+
+  return {
+    ...playerState,
+    ...createTurnVars(playerState)
+  };
+}
+
+export function createTurnVars(playerState: PlayerAttributes): TurnVars {
+  return {
+    turnSpellcasting: playerState.spellcasting,
+    turnAccuracy: playerState.accuracy,
+    turnEvasion: playerState.evasion,
+    turnShield: 0,
+    turnPain: playerState.pain
+  };
+}
+
+export function resetTurnVars(playerState: PlayerState): PlayerState {
+  return {
+    ...playerState,
+    ...createTurnVars(playerState)
+  };
+}
+
+export function attemptSpellCast(
+  state: DuelState,
+  manager: any,
+  playerName: string,
+  spell,
+  onSelf
+): DuelState {
+  // Apply effects to playerState
+  var affectedState = this.getAffectedState();
+
+  // Call any beforeCast functions from effects
+  var attemptCast = true;
+  for (let effectName of affectedState.effects) {
+    if (
+      Effects.get(effectName).beforeCast(this.manager, this, spell, onSelf) ===
+      false
+    )
+      attemptCast = false;
+  }
+
+  // Attempt to perform the spell
+  if (attemptCast) {
+    var difficultyAdjective = spell.difficultyAdjective;
+    var difficultyPhrase = `${Language.aOrAn(difficultyAdjective)} ${difficultyAdjective} spell`;
+
+    var succeeded = this.spellSucceeded(spell);
+    if (succeeded) {
+      if (onSelf || this.spellHitTarget(spell)) {
+        this.output.startSend();
+
+        this.output.append(
+          `@${this.state.name} casts _${spell.incantation}_, ${difficultyPhrase}, `
+        );
+        if (!onSelf) this.output.append(`on @${this.state.opponent}, `);
+        this.output.append(`which ${spell.description}. `);
+
+        spell.cast(this.manager, this, onSelf);
+
+        this.output.append(
+          spell.getNarration(onSelf ? this.state.name : this.state.opponent)
+        );
+
+        spell.onHitTarget(
+          this.manager,
+          onSelf ? this : new Player(this.manager, this.state.opponent),
+          onSelf
+        );
+
+        this.output.endSend();
+      } else {
+        this.output.send(
+          `@${this.state.name} casts _${spell.incantation}_ but fails to hit @${this.state.opponent}.`
+        );
+      }
+    } else if (spell.onFailure) spell.onFailure(this.manager, this, onSelf);
+    else this.output.send(
+        `@${this.state.name} fails to cast _${spell.incantation}_, ${difficultyPhrase}.`
+      );
+
+    return succeeded;
+  }
+
+  return attemptCast;
+}
+
 class Player {
+  manager: any;
+  state: PlayerState;
+
   /**
    * Creates a player object
    *
    * @param {Object} manager - a Manager instance
-   * @param {(Object|string)} playerState - either the playerState object or player name
+   * @param {Object} playerState - either the playerState object
    */
-  constructor(manager, playerState) {
-    if (typeof playerState === "string")
-      playerState = manager.getPlayerState(playerState);
-
+  constructor(manager: any, playerState: PlayerState) {
     this.manager = manager;
     this.state = playerState;
   }
 
-  get output() {
+  get output(): any {
     return this.manager.output;
   }
 
-  save() {
-    this.manager.setPlayerState(this.state.name, this.state);
+  getState() {
+    return this.state;
   }
 
-  load() {
-    this.state = this.manager.getPlayerState(this.state.name);
+  setState(partial: any) {
+    this.state = { ...this.state, partial };
   }
 
-  static getInitialState(name, isChallenger, opponent) {
-    var playerState = {
-      name: name,
-      isChallenger: isChallenger,
-      opponent: opponent,
+  static resetTurnVars(playerState: PlayerState): PlayerState {
+    return {
+      ...playerState,
+      ...Player.createTurnVars(playerState)
+    };
+  }
+
+  static createInitialState(
+    name: string,
+    isChallenger: boolean,
+    opponent: string
+  ): PlayerState {
+    const playerState = {
+      name,
+      isChallenger,
+      opponent,
       effects: [],
       numFailures: 0,
       spellcasting: 100,
@@ -52,25 +198,24 @@ class Player {
       pain: 0
     };
 
-    Player.resetTurnVars(playerState);
-
-    return playerState;
+    return {
+      ...playerState,
+      ...Player.createTurnVars(playerState)
+    };
   }
 
-  static resetTurnVars(playerState) {
-    _.extend(playerState, {
+  static createTurnVars(playerState: PlayerAttributes): TurnVars {
+    return {
       turnSpellcasting: playerState.spellcasting,
       turnAccuracy: playerState.accuracy,
       turnEvasion: playerState.evasion,
       turnShield: 0,
       turnPain: playerState.pain
-    });
+    };
   }
 
-  resetTurnVars(save) {
-    Player.resetTurnVars(this.state);
-
-    if (save) this.save();
+  resetTurnVars() {
+    this.state = Player.resetTurnVars(this.state);
   }
 
   attemptSpellCast(spell, onSelf) {
@@ -234,7 +379,7 @@ class Player {
   }
 
   static getAffectedPlayerState(manager, playerState, isDefense, verbose) {
-    var modifiedPlayerState = _.extend({}, playerState);
+    var modifiedPlayerState = Object.assign({}, playerState);
     var activeEffects = Player.getActiveEffects(playerState);
 
     for (let effectName of activeEffects)
@@ -315,7 +460,7 @@ class Player {
    */
   getStatus() {
     var state = this.getAffectedState(true);
-    var initialState = Player.getInitialState();
+    var initialState = createInitialState();
     var lines = [];
     var attributes = {
       turnSpellcasting: ["Spell-casting ability", initialState.spellcasting],

@@ -1,10 +1,12 @@
-import _ from "lodash";
+import sample from "lodash/sample";
 import oxfordJoin from "oxford-join";
 import SetFunctions from "./set";
 import Effects from "./effects";
 import Spells from "./spells";
 import Player from "./player";
 import OutputBuffer from "./output-buffer";
+
+import type { PlayerState } from "./player";
 
 /**
  * Dueling statuses
@@ -14,6 +16,46 @@ const STATUS_CHALLENGE_SENT = 1;
 const STATUS_DUELING = 2;
 
 const NUM_FAILURES_TO_LOSE = 5;
+
+export type DuelState = {
+  turn: Turn,
+  globalEffects: any[],
+  challenger: string,
+  challengee: string,
+  players: { [string]: PlayerState }
+};
+
+export type Turn = {
+  player: string,
+  attack?: boolean,
+  passive?: boolean
+};
+
+export function createInitialState(
+  challenger: string,
+  challengee: string,
+  startingPlayer: string
+): DuelState {
+  return {
+    turn: {
+      player: startingPlayer,
+      attack: true
+    },
+    globalEffects: [],
+    challenger,
+    challengee,
+    players: {
+      [challenger]: Player.createInitialState(challenger, true, challengee),
+      [challengee]: Player.createInitialState(challengee, false, challenger)
+    }
+  };
+}
+
+export const duelStatusKey = (challenger, challengee) =>
+  `duel-status:${challenger}-${challengee}`;
+export const duelStateKey = (challenger, challengee) =>
+  `duel-state:${challenger}-${challengee}`;
+export const knownSpellsKey = roomId => `known-effects:${roomId}`;
 
 /**
  * Manager manages the games state and everything
@@ -169,57 +211,32 @@ class Manager {
   // State Management
   // ---------------------------------------------------------------------------------
 
-  static getDuelKey(challenger, challengee) {
-    return `duel-status:${challenger}-${challengee}`;
+  getPlayerOpponent(playerName) {
+    return this.brain.get(playerName);
+  }
+
+  setPlayerOpponent(playerName, opponentName) {
+    this.brain.set(playerName, opponentName);
+  }
+
+  isDueling(playerName) {
+    return !!this.getPlayerOpponent(playerName);
   }
 
   getDuelStatus(challenger, challengee) {
-    return this.brain.get(Manager.getDuelKey(challenger, challengee));
+    return this.brain.get(duelStatusKey(challenger, challengee));
   }
 
   setDuelStatus(challenger, challengee, status) {
-    this.brain.set(Manager.getDuelKey(challenger, challengee), status);
+    this.brain.set(duelStatusKey(challenger, challengee), status);
   }
 
-  isDueling(user) {
-    return this.brain.get(Manager.getPlayerStateKey(user));
+  getDuelState(challenger, challengee) {
+    return this.brain.get(duelStateKey(challenger, challengee));
   }
 
-  static getPlayerStateKey(name) {
-    return `${name}.duel-info`;
-  }
-
-  getPlayerState(name) {
-    return this.brain.get(Manager.getPlayerStateKey(name));
-  }
-
-  setPlayerState(name, state) {
-    this.brain.set(Manager.getPlayerStateKey(name), state);
-  }
-
-  setInitialPlayerState(name, isChallenger, opponent) {
-    this.setPlayerState(
-      name,
-      Player.getInitialState(name, isChallenger, opponent)
-    );
-  }
-
-  resetPlayerStateTurnVars(name) {}
-
-  static getGlobalEffectsKey(challenger, challengee) {
-    return `global-effects:${challenger}-${challengee}`;
-  }
-
-  getGlobalEffects(challenger, challengee) {
-    return this.brain.get(this.getGlobalEffectsKey(challenger, challengee));
-  }
-
-  setGlobalEffects(challenger, challengee, effects) {
-    this.brain.set(this.getGlobalEffectsKey(challenger, challengee), effects);
-  }
-
-  static getKnownSpellsKey(roomId) {
-    return `known-effects:${roomId}`;
+  setDuelState(challenger, challengee, status) {
+    this.brain.set(duelStateKey(challenger, challengee), status);
   }
 
   getKnownSpells() {
@@ -304,7 +321,7 @@ class Manager {
       this.setInitialPlayerState(challengee, false, challenger);
       this.setDuelStatus(challenger, challengee, STATUS_DUELING);
 
-      var startingPlayer = _.sample([challenger, challengee]);
+      var startingPlayer = sample([challenger, challengee]);
       this.startAttackTurn(startingPlayer, challenger, challengee);
 
       this.output.send(

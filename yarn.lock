@@ -1939,6 +1939,10 @@ flat-cache@^1.2.1:
     graceful-fs "^4.1.2"
     write "^0.2.1"
 
+flow-bin@^0.66.0:
+  version "0.66.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.66.0.tgz#a96dde7015dc3343fd552a7b4963c02be705ca26"
+
 for-in@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
@@ -2415,6 +2419,10 @@ ieee754@^1.1.4:
 ignore@^3.2.0:
   version "3.3.7"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-3.3.7.tgz#612289bfb3c220e186a58118618d5be8c1bab021"
+
+immutable-set@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/immutable-set/-/immutable-set-2.0.0.tgz#db017741b227bd5071e15cae6c02d7b71816ceaf"
 
 imurmurhash@^0.1.4:
   version "0.1.4"

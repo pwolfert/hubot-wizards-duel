@@ -20,7 +20,7 @@ describe('Spells', () => {
       reply: function() {},
     });
 
-    player = new Player(manager, Player.getInitialState('alice', true, 'bob'));
+    player = new Player(manager, Player.createInitialState('alice', true, 'bob'));
   });
 
   it('adds and removes appropriate effects', () => {
